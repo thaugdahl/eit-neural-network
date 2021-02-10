@@ -4,6 +4,7 @@ from tensorflow.keras.layers import SimpleRNN, Dense, Bidirectional, LSTM, Dropo
 from tensorflow.keras import Sequential
 
 
+
 def build_rnn_model(input_shape):
     """
     Builds a RNN model, compiles it and returns the model.
