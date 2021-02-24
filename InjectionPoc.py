@@ -1,8 +1,6 @@
 import tensorflow as tf
 import datetime
 import numpy as np
-import RNN
-
 
 a = [[0, 1, 2], [1, 2, 3]]
 a = np.array(a)
