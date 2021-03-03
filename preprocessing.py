@@ -1,44 +1,49 @@
 import numpy as np
 
 
-def createSamplesFromSlidingWindow(data, window_size, remove=0):
+def create_sliding_window(data: np.ndarray, window_size: int):
     """
-    data = [x | y | t | ...]
-    returns [sample1 | sample2 | ...]^T, sample_i = [[x_i y_i t_i], [x_i+1 y_i+1 t_i+1]], sample shape (window_size, )
+    Converts data to sliding window data
+    :param data: Timeseries data to convert to sliding window data. Columns of data are x1,..,xn,t.
+    :param window_size: Length of sliding window.
+    :return: Sliding window data. Each row contains all the data in one sliding window.
     """
 
-    # Number of samples
+    # Number of sliding windows to create
     N = data.shape[0] - window_size + 1
 
     # Index array
     I = np.repeat(np.arange(window_size).reshape((1, window_size)), N, axis=0) + \
         np.arange(N).reshape((N, 1))
 
-    if remove == 0:
-        return data[..., :][I]
-    else:
-        return data[..., :-remove][I]
+    return data[..., :][I]
 
 
-def createTargets(data, remove=0):
+def approximate_derivatives(data: np.ndarray):
     """
-    Create target values using forward differences to approximate derivatives
+    Aapproximate derivative using forward difference.
+    :param data: Timeseries data with timestamps in the last column.
+    :return: Numpy array with derivatives.
     """
-    if remove == 0:
-        derivative = (data[1:, :-1] - data[:-1, :-1]) / \
-            (data[1:, -1] - data[:-1, -1]).reshape((data.shape[0] - 1, 1))
 
-    else:
-        remove += 1
-        derivative = (data[1:, :-remove] - data[:-1, :-remove]) / \
-            (data[1:, -remove] - data[:-1, -remove]
-             ).reshape((data.shape[0] - 1, 1))
+    derivative = (data[1:, :-1] - data[:-1, :-1]) / \
+        (data[1:, -1] - data[:-1, -1]).reshape((data.shape[0] - 1, 1))
 
     return derivative
 
 
-def createTrainingData(data, window_size, skip=1, remove=0):
-    data = data[::skip, ...]
-    train = createSamplesFromSlidingWindow(data[:-1, ...], window_size, remove)
-    target = createTargets(data[window_size - 1:, ...], remove)
-    return train, target
+def create_training_data(data: np.ndarray, window_size: int, step: int):
+    """
+    Create training data of sliding windows with target values as derivatives.
+    :param data: Timeseries data with timestamps in the last column.
+    :param window_size: Length of sliding window.
+    :param step: For sparsing the data. Step 1 uses all the data, step 2 uses every other datapoint and so on
+    :return: Tuple with train and target data
+    """
+
+    sparse_data = data[::step, ...]
+
+    train_data = create_sliding_window(sparse_data[:-1, ...], window_size)
+    target_data = approximate_derivatives(sparse_data[window_size - 1:, ...])
+
+    return train_data, target_data
