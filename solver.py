@@ -88,7 +88,7 @@ def generateTrainingData(saveResults=False):
     #LVparams_dims = np.shape(LVparams)
     
     # Set other parameters
-    f = eq.duffing
+    f = eq.pertlotka_volterra
     t = 0.0
     T = 200
     h = 0.05
