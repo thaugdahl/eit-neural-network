@@ -70,7 +70,7 @@ def generateTrainingData(saveResults=False):
     #LVparams_dims = np.shape(LVparams)
     
     # Set other parameters
-    f = eq.duffing
+    f = eq.pertlotka_volterra
     t = 0.0
     T = 200
     h = 0.05
@@ -86,12 +86,8 @@ def generateTrainingData(saveResults=False):
         print("Data has been saved in file ",fileName,"\n")
     return dataset
 # Generate dataset and set saveResults to true or false
-dataset = generateTrainingData(saveResults=False)
+dataset = generateTrainingData(saveResults=True)
 # Plot (segment of) solution
-firstRow = 0
-lastRow = 1000
-plotSolution(dataset,firstRow,lastRow,'pp')
-
-def tsv2arr(filename):
-    return genfromtxt(filename, delimiter='\t')
-x = tsv2arr("eit_test.tsv")
+firstRow = 4001
+lastRow = 8000
+plotSolution(dataset,firstRow,lastRow,"pp")
