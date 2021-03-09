@@ -3,11 +3,12 @@ from preprocessing import create_training_data
 from solver import tsv2arr
 from settings import *
 import numpy as np
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
     # Training data size
-    N = 100
+    N = 1000
 
     # Number of timesteps to skip when creating training data
     sparse = 10
@@ -46,7 +47,14 @@ if __name__ == '__main__':
 
     # Train the NN
     nn.compile(optimizer=OPTIMIZER, loss=LOSS)
-    nn.fit(x=[training_data, injection_data], y=[test_data])
+    history = nn.fit(x=[training_data, injection_data], y=[
+        test_data], epochs=100, validation_split=0.5)
+
+    plt.plot(history.history['loss'], label='MSE training data')
+    plt.plot(history.history['val_loss'], label='MSE validation data')
+    plt.xlabel("Epochs")
+    plt.legend()
+    plt.show()
 
     # # Then need to predict for the future
     # predictions = []
