@@ -3,15 +3,16 @@ from preprocessing import create_training_data
 from solver import tsv2arr
 from settings import *
 import numpy as np
-from math import floor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
     # Training data size
     N = 10000
+
 
     # Number of timesteps to skip when creating training data
     sparse = 10
@@ -53,7 +54,13 @@ if __name__ == '__main__':
 
     # Train the NN
     nn.compile(optimizer=OPTIMIZER, loss=LOSS)
-    nn.fit(x=[x_train, injection_data], y=[y_train])
+    history = nn.fit(x=[x_train, injection_data], y=[y_train])
+
+    plt.plot(history.history['loss'], label='MSE training data')
+    plt.plot(history.history['val_loss'], label='MSE validation data')
+    plt.xlabel("Epochs")
+    plt.legend()
+    plt.show()
 
     # # Then need to predict for the future. Try to see if they match validation data
     predictions = []
@@ -78,5 +85,6 @@ if __name__ == '__main__':
     t_accuracy = mean_squared_error([i[2] for i in x_test], [j[2] for j in predictions])
     # This is expected to be perfect, else something is wrong
     print("T-Accuracy with PGML: {}".format(t_accuracy))
+
 
 
