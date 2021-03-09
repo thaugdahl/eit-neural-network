@@ -6,10 +6,6 @@ from settings import NN_HIDDEN_LAYERS, LOSS, OPTIMIZER, INJECTION_LAYERS
 import math
 from typing import Union
 
-a = [[0, 1, 2], [1, 2, 3]]
-a = np.array(a)
-print(a.shape)
-
 """
 Example Sliding Window
 Sliding window size = 2
