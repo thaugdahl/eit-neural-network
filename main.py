@@ -6,7 +6,10 @@ import numpy as np
 
 if __name__ == '__main__':
 
+    # Training data size
     N = 100
+
+    # Number of timesteps to skip when creating training data
     sparse = 10
 
     # Generate some training- and test-data
