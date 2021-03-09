@@ -24,3 +24,6 @@ def build_rnn_model(input_shape):
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
     return model
+
+
+print("hei")
