@@ -11,6 +11,7 @@ import os.path
 from os import path
 from numpy import genfromtxt
 import equations as eq
+from tqdm import tqdm
 
 
 def rk4step(tn, xn, f, h):
@@ -78,13 +79,13 @@ def generateTrainingData(saveResults=False):
     # Set other parameters
     f = eq.duffing
     t = 0.0
-    T = 200
+    T = 20000
     h = 0.05
-    x0 = np.array([2.0, 5.0, 1.0])
-    y0 = np.array([20.0, 15.0, 10.0])
+    x0 = np.array([2.0])
+    y0 = np.array([20.0])
     nRuns = x0.size
     dataset = np.zeros((0, 4), dtype=float)
-    for run in range(int(nRuns)):
+    for run in tqdm(range(int(nRuns))):
         x = rk4(f, t, T, h, x0, y0, run)
         dataset = np.vstack((dataset, x))
     if saveResults:
@@ -102,3 +103,8 @@ def generateTrainingData(saveResults=False):
 def tsv2arr(filename):
     return genfromtxt(filename, delimiter='\t')
 # x = tsv2arr("eit_test.tsv")
+
+
+if __name__ == '__main__':
+    generateTrainingData(saveResults=True)
+
