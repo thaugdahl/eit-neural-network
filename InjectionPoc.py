@@ -23,11 +23,11 @@ samples = [
     ],
     [
         # [x2, y2, t2,] , [x3, y3, t3]
-        [math.pi / 2, 0, 2], [(3*math.pi) / 4, -0.5, 3]
+        [math.pi / 2, 0, 2], [(3 * math.pi) / 4, -0.5, 3]
     ],
     [
         # [x3, y3, t3,] , [x4, y4, t4]
-        [(3*math.pi) / 4, -0.5, 3], [math.pi, -1, 4]
+        [(3 * math.pi) / 4, -0.5, 3], [math.pi, -1, 4]
     ]
 ]
 
@@ -90,6 +90,8 @@ def gen_nn(hidden_layers: tuple, injection_nodes: dict, window: int, series_leng
     input_layer = gen_input_layer(input_size)
     x = input_layer
     injection_layers = []
+    x = tf.keras.layers.Flatten()(x)
+
     # Iterate trough the layers and add them
     for i, dim in enumerate(hidden_layers):
         x = tf.keras.layers.Dense(dim)(x)
@@ -97,26 +99,29 @@ def gen_nn(hidden_layers: tuple, injection_nodes: dict, window: int, series_leng
         if i in injection_nodes.keys():
             # Create injection layer
             injection_layer = gen_input_layer(injection_nodes[i])
+            flatten_injection_layer = tf.keras.layers.Flatten()(injection_layer)
+
             # Add proxy level
-            x = tf.keras.layers.Dense(injection_nodes[i][0])(x)
+            # x = tf.keras.layers.Dense(injection_nodes[i][0])(x)
+
             # Add injection level
-            x = tf.keras.layers.Add()([x, injection_layer])
-            x = tf.keras.layers.Flatten()(x)
+            x = tf.keras.layers.Concatenate()([x, flatten_injection_layer])
             injection_layers.append(injection_layer)
     # Add output layer
     out = tf.keras.layers.Dense(series_length - 1)(x)
-    model = tf.keras.models.Model(inputs=[input_layer] + injection_layers, outputs=out)
+    model = tf.keras.models.Model(
+        inputs=[input_layer] + injection_layers, outputs=out)
     return model
 
 
 if __name__ == '__main__':
     nn = gen_nn(NN_HIDDEN_LAYERS, INJECTION_LAYERS, 2, 3)
-    nn.compile(optimizer=OPTIMIZER,loss=LOSS, metrics=None)
+    nn.compile(optimizer=OPTIMIZER, loss=LOSS, metrics=None)
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-    x1 = np.array([[[1, 2, 3], [2, 2, 3]], [[1, 2, 4], [1, 2, 3]], [[1, 2, 3], [1, 2, 3]]])
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+        log_dir=log_dir, histogram_freq=1)
+    x1 = np.array([[[1, 2, 3], [2, 2, 3]], [[1, 2, 4],
+                                            [1, 2, 3]], [[1, 2, 3], [1, 2, 3]]])
     x2 = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
-    nn.fit(x=[x1, x2], y=np.array([[1, 0], [1, 0], [1, 0]]), epochs=3, callbacks=[tensorboard_callback])
-
-
-
+    nn.fit(x=[x1, x2], y=np.array([[1, 0], [1, 0], [1, 0]]),
+           epochs=3, callbacks=[tensorboard_callback])
