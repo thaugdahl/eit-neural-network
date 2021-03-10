@@ -94,7 +94,7 @@ def gen_nn(hidden_layers: tuple, injection_nodes: dict, window: int, series_leng
 
     # Iterate trough the layers and add them
     for i, dim in enumerate(hidden_layers):
-        x = tf.keras.layers.Dense(dim)(x)
+        x = tf.keras.layers.Dense(dim, activation='relu')(x)
         # If injection for this layer
         if i in injection_nodes.keys():
             # Create injection layer

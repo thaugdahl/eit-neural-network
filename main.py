@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from math import floor, isnan
 
 if __name__ == '__main__':
 
@@ -15,11 +16,11 @@ if __name__ == '__main__':
 
 
     # Number of timesteps to skip when creating training data
-    sparse = 10
+    sparse = 1
 
     # Generate some training- and test-data
     raw_data = tsv2arr("eit_test.tsv")
-
+    raw_data = np.array([i for i in raw_data if i[-1] == 0])
     # Remove training batch info and limit training size
     raw_data = raw_data[:N * sparse, :-1]
 
@@ -29,10 +30,15 @@ if __name__ == '__main__':
     nn = gen_nn(NN_HIDDEN_LAYERS, INJECTION_LAYERS,
                 SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES)
 
-    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=VALIDATION_SPLIT, random_state=1)
-    
+    splitting_index = floor(len(x_data) * (1-VALIDATION_SPLIT))
+    x_train = x_data[:splitting_index]
+    x_test = x_data[splitting_index:]
+    y_train = y_data[:splitting_index]
+    y_test = y_data[splitting_index:]
+
     
     # Create the injection data
+    # TODO: Make general for more than two values
     injection_data = []
     for d in x_train:
         # Just multiplying x and y for now (think this is correct?)
@@ -54,15 +60,16 @@ if __name__ == '__main__':
 
     # Train the NN
     nn.compile(optimizer=OPTIMIZER, loss=LOSS)
-    history = nn.fit(x=[x_train, injection_data], y=[y_train])
+    history = nn.fit(x=[x_train, injection_data], y=[y_train], epochs=10)
+    nn.summary()
 
     plt.plot(history.history['loss'], label='MSE training data')
-    plt.plot(history.history['val_loss'], label='MSE validation data')
+    # plt.plot(history.history['val_loss'], label='MSE validation data')
     plt.xlabel("Epochs")
     plt.legend()
     plt.show()
 
-    # # Then need to predict for the future. Try to see if they match validation data
+    # Then need to predict for the future. Try to see if they match validation data
     predictions = []
     last_step = x_train[-1]
     time_step = abs(x_test[0][0][-1] - x_test[0][1][-1])
@@ -75,16 +82,43 @@ if __name__ == '__main__':
         new_time = last_step[-1][-1] + time_step
         new_step = [new_x, new_y, new_time]
         predictions.append(new_step)
-        last_step = np.array([list(last_step[1:][0])] + [new_step])
+        last_step = np.array(last_step[1:].tolist() + [new_step])
+
+    # This is expected to be perfect, else something is wrong
+    t_accuracy = mean_squared_error([i[0][2] for i in x_test], [j[2] for j in predictions])
+    print("T-Accuracy with PGML: {}".format(t_accuracy))
+
+    # Create a prediction plot
+    plt.figure()
+    x_axis = [time_step * i for i in range(len(x_test))]
+    valid_predictions = [i for i in predictions if not isnan(i[0]) and not isnan(i[1])]
+    x_pred = [i[0] for i in valid_predictions]
+    y_pred = [i[1] for i in valid_predictions]
+    plt.ylim(min(x_pred[0] * (-5), y_pred[0] * (-5)), max(x_pred[0] * 5, y_pred[0] * 5))
+    plt.plot(x_axis[:len(x_pred)], x_pred, label="Predictions X")
+    plt.plot(x_axis[:len(y_pred)], y_pred, label="Predictions Y")
+    actual_values = [i[-1] for i in x_test]
+    x_actual = [i[0] for i in actual_values]
+    y_actual = [i[1] for i in actual_values]
+    plt.plot(x_axis, x_actual, label="Actual data X")
+    plt.plot(x_axis, y_actual, label="Actual data Y")
+    plt.legend()
+    plt.show()
 
     # When predictions is obtained, compare with validation data
-    x_accuracy = mean_squared_error([i[0] for i in x_test], [j[0] for j in predictions])
+    x_accuracy = mean_squared_error([i[0][0] for i in x_test], [j[0] for j in predictions])
     print("X-Accuracy with PGML: {}".format(x_accuracy))
-    y_accuracy = mean_squared_error([i[1] for i in x_test], [j[1] for j in predictions])
+    y_accuracy = mean_squared_error([i[0][1] for i in x_test], [j[1] for j in predictions])
     print("Y-Accuracy with PGML: {}".format(y_accuracy))
-    t_accuracy = mean_squared_error([i[2] for i in x_test], [j[2] for j in predictions])
-    # This is expected to be perfect, else something is wrong
-    print("T-Accuracy with PGML: {}".format(t_accuracy))
+
+
+
+
+
+
+
+
+
 
 
 
