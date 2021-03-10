@@ -2,9 +2,9 @@ LOSS = "mse"
 OPTIMIZER = "adam"
 VALIDATION_SPLIT = 0.25
 NN_HIDDEN_LAYERS = (64, 124, 64)
-INJECTION_LAYERS = {1: (1, )}
+INJECTION_LAYERS = {}
 PREDICTION_TIME_STEP = 0.5
-
+ACTIVATION = 'relu'
 
 """
 Structure of data

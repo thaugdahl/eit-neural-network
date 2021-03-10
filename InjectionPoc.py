@@ -76,13 +76,14 @@ def gen_input_layer(shape: tuple):
     return tf.keras.layers.Input(shape=shape)
 
 
-def gen_nn(hidden_layers: tuple, injection_nodes: dict, window: int, series_length: int):
+def gen_nn(hidden_layers: tuple, injection_nodes: dict, window: int, series_length: int, activation: str):
     """
     Generates a neural network of dense layers based on the params.
     :param hidden_layers: Tuple of hidden layer-dimensions. Implicitly determining number of hidden layers.
     :param injection_nodes: Dict of nodes to inject. K=layer (starting from 0), V=(n_nodes, injection_length)
     :param window: The length of the sliding window
     :param series_length: Length of a series for a input-node (data for one time step)
+    :param activation: Activation function to use in hidden layers
     :return: The generated neural network.
     """
     # Generate nn
@@ -94,7 +95,7 @@ def gen_nn(hidden_layers: tuple, injection_nodes: dict, window: int, series_leng
 
     # Iterate trough the layers and add them
     for i, dim in enumerate(hidden_layers):
-        x = tf.keras.layers.Dense(dim)(x)
+        x = tf.keras.layers.Dense(dim, activation)(x)
         # If injection for this layer
         if i in injection_nodes.keys():
             # Create injection layer
