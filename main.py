@@ -3,12 +3,16 @@ from preprocessing import create_training_data
 from solver import tsv2arr
 from settings import *
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
     # Training data size
-    N = 1000
+    N = 10000
+
 
     # Number of timesteps to skip when creating training data
     sparse = 10
@@ -19,15 +23,18 @@ if __name__ == '__main__':
     # Remove training batch info and limit training size
     raw_data = raw_data[:N * sparse, :-1]
 
-    training_data, test_data = create_training_data(
+    x_data, y_data = create_training_data(
         raw_data, SLIDING_WINDOW_LENGTH, sparse)
     # Generate the neural network
     nn = gen_nn(NN_HIDDEN_LAYERS, INJECTION_LAYERS,
                 SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES)
 
+    x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=VALIDATION_SPLIT, random_state=1)
+    
+    
     # Create the injection data
     injection_data = []
-    for d in training_data:
+    for d in x_train:
         # Just multiplying x and y for now (think this is correct?)
         injection_data.append(
             [d[SLIDING_WINDOW_LENGTH - 1][0] * d[SLIDING_WINDOW_LENGTH - 1][1]])
@@ -47,8 +54,7 @@ if __name__ == '__main__':
 
     # Train the NN
     nn.compile(optimizer=OPTIMIZER, loss=LOSS)
-    history = nn.fit(x=[training_data, injection_data], y=[
-        test_data], epochs=100, validation_split=0.5)
+    history = nn.fit(x=[x_train, injection_data], y=[y_train])
 
     plt.plot(history.history['loss'], label='MSE training data')
     plt.plot(history.history['val_loss'], label='MSE validation data')
@@ -56,19 +62,29 @@ if __name__ == '__main__':
     plt.legend()
     plt.show()
 
-    # # Then need to predict for the future
-    # predictions = []
-    # last_step = training_data[-1]
-    # time_step = PREDICTION_TIME_STEP
-    # for i in range(PREDICTION_STEPS):
-    #     injection = last_step[SLIDING_WINDOW_LENGTH -
-    #                           1][0] * last_step[SLIDING_WINDOW_LENGTH - 1][1]
-    #     derivative = nn.predict(x=[last_step, injection])
-    #     time_step = PREDICTION_TIME_STEP
-    #     # x(t+1) = x(t) + x´(t) * delta(t)
-    #     new_x = last_step[-1][0] + derivative * time_step
-    #     new_y = last_step[-1][1] + derivative * time_step
-    #     new_time = last_step[-1][-1] + time_step
-    #     # Dont know whats going on the 3rd here? We have index0=x, index1=y. index2=? og index3=timestep?
-    #     new_step = [new_x, new_y, None, new_time]
-    #     last_step = last_step[1:-1] + new_step
+    # # Then need to predict for the future. Try to see if they match validation data
+    predictions = []
+    last_step = x_train[-1]
+    time_step = abs(x_test[0][0][-1] - x_test[0][1][-1])
+    for i in tqdm(range(len(x_test))):
+        injection = np.array([last_step[1][0] * last_step[1][1]])
+        derivatives = nn.predict(x=[np.array([last_step]), injection])[0]
+        # x(t+1) = x(t) + x´(t) * delta(t)
+        new_x = last_step[-1][0] + derivatives[0] * time_step
+        new_y = last_step[-1][1] + derivatives[1] * time_step
+        new_time = last_step[-1][-1] + time_step
+        new_step = [new_x, new_y, new_time]
+        predictions.append(new_step)
+        last_step = np.array([list(last_step[1:][0])] + [new_step])
+
+    # When predictions is obtained, compare with validation data
+    x_accuracy = mean_squared_error([i[0] for i in x_test], [j[0] for j in predictions])
+    print("X-Accuracy with PGML: {}".format(x_accuracy))
+    y_accuracy = mean_squared_error([i[1] for i in x_test], [j[1] for j in predictions])
+    print("Y-Accuracy with PGML: {}".format(y_accuracy))
+    t_accuracy = mean_squared_error([i[2] for i in x_test], [j[2] for j in predictions])
+    # This is expected to be perfect, else something is wrong
+    print("T-Accuracy with PGML: {}".format(t_accuracy))
+
+
+
