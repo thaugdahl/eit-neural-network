@@ -5,65 +5,33 @@ import numpy as np
 from settings import NN_HIDDEN_LAYERS, LOSS, OPTIMIZER, INJECTION_LAYERS
 import math
 from typing import Union
-
-"""
-Example Sliding Window
-Sliding window size = 2
-
-Single timestep samples from cos(x), x=t*pi/4
-"""
-samples = [
-    [
-        # [x0, y0, t0,] , [x1, y1, t1]
-        [0, 1, 0], [math.pi / 4, 0.5, 1]
-    ],
-    [
-        # [x1, y1, t1,] , [x2, y2, t2]
-        [math.pi / 4, 0.5, 1], [math.pi / 2, 0, 2]
-    ],
-    [
-        # [x2, y2, t2,] , [x3, y3, t3]
-        [math.pi / 2, 0, 2], [(3 * math.pi) / 4, -0.5, 3]
-    ],
-    [
-        # [x3, y3, t3,] , [x4, y4, t4]
-        [(3 * math.pi) / 4, -0.5, 3], [math.pi, -1, 4]
-    ]
-]
+from tqdm import tqdm
 
 
-def predict(
-        nn: tf.keras.models.Model,
-        window: Union[np.ndarray, list],
-        steps: int,
-        delta_t: float,
-        values_per_step: int = 3,
-        steps_per_window: int = 2
-):
+def get_predictions(starting_point, time_step, nn, prediction_len, injection_func):
     """
-    :return: History of single timestep samples including the window used in this function
+    Returns "prediction_len" predictions (obtained by backfeeding) from the starting-point.
+    :param starting_point: The starting-point (where to start predicting from)
+    :param time_step: The time-step between two predictions
+    :param nn: The nn to use for predicting
+    :param prediction_len: The number of predictions to make
+    :param injection_func: The function to use to calculate the injection (based on the whole window for a step)
+    :return: A list of predictions
     """
-    global samples
-    history = np.array(window, ndmin=1)
-    window = np.array(window)
-    history = np.append(history, [samples[1][1]], axis=0)
+    predictions = []
+    last_step = starting_point
+    for _ in tqdm(range(prediction_len)):
+        injection = np.array([injection_func(last_step)])
+        derivatives = nn.predict(x=[np.array([last_step]), injection])[0]
+        # x(t+1) = x(t) + x´(t) * delta(t)
+        new_x = last_step[-1][0] + derivatives[0] * time_step
+        new_y = last_step[-1][1] + derivatives[1] * time_step
+        new_time = last_step[-1][-1] + time_step
+        new_step = [new_x, new_y, new_time]
+        predictions.append(new_step)
+        last_step = np.array(last_step[1:].tolist() + [new_step])
 
-    print(history[-SLIDING_WINDOW_LENGTH:])
-
-    # Use of nn.predict() to get the derivatives
-    for i in range(steps):
-        # beregene nye verdier for injected layers
-        # og feede de til riktige inputs
-        derivatives = nn.predict(x=[history[-SLIDING_WINDOW_LENGTH:]])
-        # derivatives = nn.predict(x=[history[-SLIDING_WINDOW_LENGTH:], injected_array])
-        # Sørge for å ta ut t herfra først.
-        new_values = history[-1:][0:DATA_NUM_VARIABLES] + derivatives * delta_t
-        new_t = history[-1][-1] + delta_t
-
-        new_single_sample = np.array(new_values + new_t)
-        np.insert(history, new_single_sample)
-
-    return history
+    return predictions
 
 
 def gen_input_layer(shape: tuple):
