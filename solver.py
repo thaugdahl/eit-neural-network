@@ -14,12 +14,21 @@ import equations as eq
 from tqdm import tqdm
 
 
-def rk4step(tn, xn, f, h):
-    k1 = f(tn, xn)
-    k2 = f(tn + 0.5 * h, xn + 0.5 * h * k1)
-    k3 = f(tn + 0.5 * h, xn + 0.5 * h * k2)
-    k4 = f(tn + h, xn + h * k3)
-    xnp1 = xn + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6
+def rk4step(tn,xn,f,h):
+    """
+    Calculates the next timestep using the rungekutta method.
+    :param tn: The current value of the t variable
+    :param xn: The current position vector
+    :param f: The function describing the ODE we wish to solve
+    :param h: The discrete timestep
+    :return: Returns the position vector of the system at time tn+h
+    """
+    
+    k1 = f(tn,xn)
+    k2 = f(tn+0.5*h,xn+0.5*h*k1)
+    k3 = f(tn+0.5*h,xn+0.5*h*k2)
+    k4 = f(tn+h,xn+h*k3)
+    xnp1 = xn + h*(k1+2*k2+2*k3+k4)/6
     return xnp1
 
 
@@ -35,19 +44,27 @@ def plotSolution(dataset, firstRow, lastRow, style="standard"):
         plt.xlabel("t")
         plt.ylabel("Solution")
     plt.show()
-
-
-def rk4(f, t, T, h, x0, y0, run):
-    N = int(np.ceil(T / h))
-    n = 0
-    x = np.zeros((N + 1, 4), dtype=float)
-    x[0, 0] = x0[run]
-    x[0, 1] = y0[run]
-    x[:, 3] = run
-
-    while n < N:
-        x[n + 1, :-2] = rk4step(t, x[n, :-2], f, h)
-        x[n + 1, 2] = t
+    
+def rk4(f,t0,T,h,x0,d):
+    """
+    Calculates a trajecory of a dynamical system with given initial data.
+    :param f: The function controlling the dynamical system, \dot x = f(t,x)
+    :param t: The initial time of the system
+    :param T: The terminal time
+    :param h: The discrete timestep
+    :param x0: The initial conditions, the position of the system at time t0.
+    :param d: The number of spatial dimensions of the system
+    """
+    N = int(np.ceil((T-t0)/h))
+    n = 0 
+    x = np.zeros((N+1,d+1),dtype=float)
+    x[0,:-1] = x0
+    
+    t=t0
+    
+    while n<N:
+        x[n+1,:-1] = rk4step(t,x[n,:-1],f,h)
+        x[n+1,-1] = t
         t += h
         n += 1
     return x
@@ -77,17 +94,18 @@ def generateTrainingData(saveResults=False):
     #LVparams_dims = np.shape(LVparams)
 
     # Set other parameters
-    f = eq.duffing
+    f = eq.lotka_volterra
     t = 0.0
     T = 20000
     h = 0.05
-    x0 = np.array([2.0])
-    y0 = np.array([20.0])
-    nRuns = x0.size
-    dataset = np.zeros((0, 4), dtype=float)
-    for run in tqdm(range(int(nRuns))):
-        x = rk4(f, t, T, h, x0, y0, run)
-        dataset = np.vstack((dataset, x))
+    x0 = np.array([[12+i,2] for i in range(1,101)])
+    nRuns,d = x0.shape
+    dataset = np.zeros((0,4),dtype=float)
+    for run in range(int(nRuns)):
+        x = rk4(f,t,T,h,x0[run],2)
+        runcol = np.full((x.shape[0],1), run)
+        x = np.hstack((x,runcol))
+        dataset = np.vstack((dataset,x))
     if saveResults:
         np.savetxt(fileName, dataset, delimiter="\t")
         print("Data has been saved in file ", fileName, "\n")
