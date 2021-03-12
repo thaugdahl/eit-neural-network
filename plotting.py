@@ -25,7 +25,7 @@ def plot_prediction_accuracy(test_data, predictions, time_step, num_vars, title)
     for i in range(len(prediction_axises)):
         if prediction_axises[i][0] > largest_val:
             largest_val = prediction_axises[i][0]
-    plt.ylim(largest_val * (-5), largest_val * 5)
+    # plt.ylim(largest_val * (-5), largest_val * 5)
 
     # Plot all predictions and compare with actual data
     for i in range(len(prediction_axises)):
