@@ -88,11 +88,11 @@ def generateTrainingData(saveResults=False):
     #LVparams_dims = np.shape(LVparams)
     
     # Set other parameters
-    f = eq.pertlotka_volterra
+    f = eq.lotka_volterra
     t = 0.0
     T = 200
     h = 0.05
-    x0 = np.array([[2.0,20.0],[5.0,15.0],[1.0,10.0]])
+    x0 = np.array([[12+i,2] for i in range(1,101)])
     nRuns,d = x0.shape
     dataset = np.zeros((0,4),dtype=float)
     for run in range(int(nRuns)):
@@ -105,10 +105,10 @@ def generateTrainingData(saveResults=False):
         print("Data has been saved in file ",fileName,"\n")
     return dataset
 # Generate dataset and set saveResults to true or false
-dataset = generateTrainingData(saveResults=True)
+dataset = generateTrainingData(saveResults=False)
 # Plot (segment of) solution
-firstRow = 500
-lastRow = 1000
+firstRow = 0
+lastRow = 1000000
 plotSolution(dataset,firstRow,lastRow,'pp')
 
 def tsv2arr(filename):
