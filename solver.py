@@ -96,9 +96,9 @@ def generateTrainingData(saveResults=False):
     # Set other parameters
     f = eq.lotka_volterra
     t = 0.0
-    T = 20000
+    T = 200
     h = 0.05
-    x0 = np.array([[12+i,2] for i in range(1,101)])
+    x0 = np.array([[13+50*i,2] for i in range(0,3)])
     nRuns,d = x0.shape
     dataset = np.zeros((0,4),dtype=float)
     for run in range(int(nRuns)):
@@ -110,12 +110,14 @@ def generateTrainingData(saveResults=False):
         np.savetxt(fileName, dataset, delimiter="\t")
         print("Data has been saved in file ", fileName, "\n")
     return dataset
+
+
 # Generate dataset and set saveResults to true or false
-# dataset = generateTrainingData(saveResults=False)
-# # Plot (segment of) solution
-# firstRow = 0
-# lastRow = 1000
-# plotSolution(dataset,firstRow,lastRow,'pp')
+dataset = generateTrainingData(saveResults=True)
+# Plot (segment of) solution
+firstRow = 0
+lastRow = 10000000
+plotSolution(dataset,firstRow,lastRow,'pp')
 
 
 def tsv2arr(filename):
@@ -123,6 +125,6 @@ def tsv2arr(filename):
 # x = tsv2arr("eit_test.tsv")
 
 
-if __name__ == '__main__':
-    generateTrainingData(saveResults=True)
+#if __name__ == '__main__':
+#    generateTrainingData(saveResults=True)
 
