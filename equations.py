@@ -42,7 +42,7 @@ def duffing(t,x):
     omega = 0.4 #Driving frequency
     
     f0 = x[1]
-    f1 = gamma*np.cos(omega*t) - delta*x[1] - alpha*x[0] - beta*(x[0]**3)*100*(1+np.exp(-t/1000))*np.abs(np.sin(x[0]))
+    f1 = gamma*np.cos(omega*t) - delta*x[1] - alpha*x[0] - beta*(x[0]**3)*100*(1+np.exp((-t)/1000))*np.abs(np.sin(x[0]))
     
     return np.array([f0, f1])
 
