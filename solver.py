@@ -79,10 +79,10 @@ def generateTrainingData(saveResults=False):
     # Set other parameters
     f = eq.duffing
     t = 0.0
-    T = 20000
+    T = 200
     h = 0.05
-    x0 = np.array([2.0])
-    y0 = np.array([20.0])
+    x0 = np.array([i for i in range(1, 101)])
+    y0 = np.array([i for i in range(1, 101)])
     nRuns = x0.size
     dataset = np.zeros((0, 4), dtype=float)
     for run in tqdm(range(int(nRuns))):

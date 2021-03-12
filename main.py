@@ -20,7 +20,7 @@ if __name__ == '__main__':
     sparse = 1
 
     # Generate some training- and test-data
-    raw_data = tsv2arr("large_test.tsv")
+    raw_data = tsv2arr("diff_inits.tsv")
     raw_data = np.array([i for i in raw_data if i[-1] == 0])
     # Remove training batch info and limit training size
     raw_data = raw_data[:N * sparse, :-1]
@@ -57,9 +57,24 @@ if __name__ == '__main__':
     plt.legend()
     plt.show()
 
-    # Then need to predict for the future. Try to see if they match validation data
     starting_point = x_train[-1]
     time_step = abs(x_prediction[0][0][-1] - x_prediction[0][1][-1]) * sparse
+
+    # TODO: Fix this, not working
+    """
+    derivative_predictions = []
+    for i in range(len(x_prediction)):
+        injection = np.array([x_prediction[-1][0] * x_prediction[-1]])
+        derivative_predictions.append(nn.predict(x=[x_prediction[i], injection]))
+
+    x_axis = [time_step * i for i in range(len(x_prediction))]
+    plt.figure()
+    plt.plot(x_axis, derivative_predictions, label="Derivative Predictions")
+    plt.plot(x_axis, y_prediction, label="Actual Derivatives")
+    plt.legend()
+    plt.show()"""
+
+    # Then need to predict for the future. Try to see if they match validation data
     predictions = get_predictions(starting_point, time_step, nn, len(x_prediction), multiply_variables)
 
     # This is expected to be perfect, else something is wrong
