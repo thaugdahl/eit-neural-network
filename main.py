@@ -20,7 +20,7 @@ if __name__ == '__main__':
     sparse = 1
 
     # Generate some training- and test-data
-    raw_data = tsv2arr("diff_inits.tsv")
+    raw_data = tsv2arr("DenseLV.tsv")
     raw_data = np.array([i for i in raw_data if i[-1] == 0])
     # Remove training batch info and limit training size
     raw_data = raw_data[:N * sparse, :-1]
@@ -61,18 +61,25 @@ if __name__ == '__main__':
     time_step = abs(x_prediction[0][0][-1] - x_prediction[0][1][-1]) * sparse
 
     # TODO: Fix this, not working
-    """
     derivative_predictions = []
     for i in range(len(x_prediction)):
-        injection = np.array([x_prediction[-1][0] * x_prediction[-1]])
-        derivative_predictions.append(nn.predict(x=[x_prediction[i], injection]))
+        injection = np.array([x_prediction[i][-1][0] * x_prediction[i][-1][1]])
+        derivative_predictions.append(nn.predict(x=[np.array([x_prediction[i]]), injection]))
 
     x_axis = [time_step * i for i in range(len(x_prediction))]
     plt.figure()
-    plt.plot(x_axis, derivative_predictions, label="Derivative Predictions")
-    plt.plot(x_axis, y_prediction, label="Actual Derivatives")
+    x_derivative_predictions = [derivative_predictions[i][0][0] for i in range(len(derivative_predictions))]
+    actual_x_derivatives = [y_prediction[i][0] for i in range(len(y_prediction))]
+    y_derivative_predictions = [derivative_predictions[i][0][1] for i in range(len(derivative_predictions))]
+    actual_y_derivatives = [y_prediction[i][1] for i in range(len(y_prediction))]
+    # Plot derivatives for x
+    plt.plot(x_axis, actual_x_derivatives, label="Actual x")
+    plt.plot(x_axis, x_derivative_predictions, label="Predictions x")
+    plt.plot(x_axis, actual_y_derivatives, label="Actual y")
+    plt.plot(x_axis, y_derivative_predictions, label="Predictions y")
+    plt.xlabel("Derivatives")
     plt.legend()
-    plt.show()"""
+    plt.show()
 
     # Then need to predict for the future. Try to see if they match validation data
     predictions = get_predictions(starting_point, time_step, nn, len(x_prediction), multiply_variables)
