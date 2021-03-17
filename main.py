@@ -9,7 +9,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from math import floor, isnan
 from plotting import plot_prediction_accuracy, plot_derivatives
-from InjectionFunctions import multiply_variables
+from InjectionFunctions import multiply_variables, inject_constant
 
 
 # TODO: Sort code into functions
@@ -20,6 +20,9 @@ if __name__ == '__main__':
 
     # Number of timesteps to skip when creating training data
     sparse = 1
+
+    # Set function to be used for injection
+    injection_func = multiply_variables
 
     # Generate some training- and test-data
     raw_data = tsv2arr("DenseLV.tsv")
@@ -40,12 +43,9 @@ if __name__ == '__main__':
     y_prediction = y_data[splitting_index:]
 
     # Create the injection data
-    # TODO: Make general for more than two values
     injection_data = []
     for d in x_train:
-        # Just multiplying x and y for now (think this is correct?)
-        injection_data.append(
-            [d[SLIDING_WINDOW_LENGTH - 1][0] * d[SLIDING_WINDOW_LENGTH - 1][1]])
+        injection_data.append(injection_func(d))
     injection_data = np.array(injection_data)
 
     # Train the NN
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     history = nn_inj.fit(x=[x_train, injection_data], y=[y_train], epochs=10, validation_split=VALIDATION_SPLIT)
     nn_inj.summary()
 
-    plt.plot(history.history['loss'], label='MSE training data')
+    plt.plot(history.history['loss'], label='MSE training data with PGML')
     # plt.plot(history.history['val_loss'], label='MSE validation data')
     plt.xlabel("Epochs")
     plt.legend()
@@ -74,16 +74,17 @@ if __name__ == '__main__':
     y_derivative_predictions = [derivative_predictions[i][0][1] for i in range(len(derivative_predictions))]
     actual_y_derivatives = [y_prediction[i][1] for i in range(len(y_prediction))]
     # Plot derivatives
-    plot_derivatives(x_axis, [actual_x_derivatives, actual_y_derivatives], [x_derivative_predictions, y_derivative_predictions])
+    plot_derivatives(x_axis, [actual_x_derivatives, actual_y_derivatives],
+                     [x_derivative_predictions, y_derivative_predictions], title="Derivatives with PGML")
 
     # Then need to predict for the future. Try to see if they match validation data
-    predictions = get_predictions(starting_point, time_step, nn_inj, len(x_prediction), multiply_variables)
+    predictions = get_predictions(starting_point, time_step, nn_inj, len(x_prediction), injection_func)
 
     # This is expected to be perfect, else something is wrong
     t_accuracy = mean_squared_error([i[0][2] for i in x_prediction], [j[2] for j in predictions])
     print("T-Accuracy with PGML: {}".format(t_accuracy))
 
-    title = "Trained on {} datapoints, window-length {}, time-step {}".format(len(x_train), SLIDING_WINDOW_LENGTH, time_step)
+    title = "PGML Trained on {} datapoints, window-length {}, time-step {}".format(len(x_train), SLIDING_WINDOW_LENGTH, time_step)
     plot_prediction_accuracy(x_prediction, predictions, time_step, DATA_NUM_VARIABLES - 1, title)
 
     # When predictions is obtained, compare with validation data
@@ -94,6 +95,12 @@ if __name__ == '__main__':
 
     # Now repeat the process on a regular neural network without injection to compare
     nn_reg = gen_nn(NN_HIDDEN_LAYERS, {}, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
+
+    nn_reg.compile(optimizer=OPTIMIZER, loss=LOSS)
+    history = nn_reg.fit(x=[x_train], y=[y_train], epochs=10, validation_split=VALIDATION_SPLIT)
+    nn_reg.summary()
+
+    plt.plot(history.history['loss'], label='MSE training data without PGML')
 
     # Get derivatives and plot for the network
     derivative_predictions_reg = []
@@ -106,10 +113,24 @@ if __name__ == '__main__':
     y_derivative_predictions_reg = [derivative_predictions_reg[i][0][1] for i in range(len(derivative_predictions_reg))]
     # Plot derivatives
     plot_derivatives(x_axis, [actual_x_derivatives, actual_y_derivatives],
-                     [x_derivative_predictions_reg, y_derivative_predictions_reg])
+                     [x_derivative_predictions_reg, y_derivative_predictions_reg], title="Derivatives without PGML")
 
     # Then predict for future...
-    predictions = get_predictions(starting_point, time_step, nn_reg, len(x_prediction), multiply_variables)
+    predictions_reg = get_predictions(starting_point, time_step, nn_reg, len(x_prediction))
+
+    # This is expected to be perfect, else something is wrong
+    t_accuracy = mean_squared_error([i[0][2] for i in x_prediction], [j[2] for j in predictions_reg])
+    print("T-Accuracy without PGML: {}".format(t_accuracy))
+
+    title = "Trained on {} datapoints, window-length {}, time-step {}".format(len(x_train), SLIDING_WINDOW_LENGTH,
+                                                                              time_step)
+    plot_prediction_accuracy(x_prediction, predictions_reg, time_step, DATA_NUM_VARIABLES - 1, title)
+
+    # When predictions is obtained, compare with validation data
+    x_accuracy = mean_squared_error([i[0][0] for i in x_prediction], [j[0] for j in predictions_reg])
+    print("X-Accuracy without PGML: {}".format(x_accuracy))
+    y_accuracy = mean_squared_error([i[0][1] for i in x_prediction], [j[1] for j in predictions_reg])
+    print("Y-Accuracy without PGML: {}".format(y_accuracy))
 
 
 

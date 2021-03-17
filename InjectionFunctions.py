@@ -9,3 +9,11 @@ def multiply_variables(row):
         final_value *= row[-1][i]
     return final_value
 
+
+def inject_constant(row):
+    """
+    Silly function that returns 1.
+    :param row: Not meaningful
+    :return: Returns the int 1
+    """
+    return 1
