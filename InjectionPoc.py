@@ -22,7 +22,7 @@ def get_predictions(starting_point, time_step, nn, terminal_time, injection_func
     last_step = starting_point
     while last_step[-1] <= terminal_time:
         if injection_func:
-            injection = np.array([injection_func(last_step)])
+            injection = np.array([injection_func(last_step[-1])])
             prediction = nn.predict(x=[np.array([last_step]), injection])[0]
         else:
             prediction = nn.predict(x=[np.array([last_step])])[0]
@@ -31,26 +31,6 @@ def get_predictions(starting_point, time_step, nn, terminal_time, injection_func
         new_step = last_step + prediction * time_step
         predictions.append(new_step)
         last_step = new_step
-
-
-
-
-    predictions = []
-    last_step = starting_point
-    for _ in tqdm(range(prediction_len)):
-        if injection_func:
-            injection = np.array([injection_func(last_step)])
-            derivatives = nn.predict(x=[np.array([last_step]), injection])[0]
-        else:
-            derivatives = nn.predict(x=[np.array([last_step])])[0]
-        # x(t+1) = x(t) + x´(t) * delta(t)
-        # TODO: Make general for more variables
-        new_x = last_step[-1][0] + derivatives[0] * time_step
-        new_y = last_step[-1][1] + derivatives[1] * time_step
-        new_time = last_step[-1][-1] + time_step
-        new_step = [new_x, new_y, new_time]
-        predictions.append(new_step)
-        last_step = np.array(last_step[1:].tolist() + [new_step])
 
     return predictions
 

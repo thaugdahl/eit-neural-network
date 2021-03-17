@@ -15,7 +15,7 @@ def get_injection_data(arr, inj_func):
     return injection_data
 
 
-def get_target_predictions(in_data, inj_func, nn):
+def get_target_predictions(in_data, nn, inj_func=None):
     """
     Returns the target predictions obtained by using the neural network over in_data.
     :param in_data: The data that's used as in-data to the nn
@@ -25,8 +25,11 @@ def get_target_predictions(in_data, inj_func, nn):
     """
     predictions = []
     for i in range(len(in_data)):
-        injection = np.array([inj_func(in_data[i])])
-        predictions.append(nn.predict(x=[np.array([in_data[i]]), injection]))
+        if inj_func:
+            injection = np.array([inj_func(in_data[i])])
+            predictions.append(nn.predict(x=[np.array([in_data[i]]), injection]))
+        else:
+            predictions.append(nn.predict(x=[np.array([in_data[i]])]))
     return np.array(predictions)
 
 

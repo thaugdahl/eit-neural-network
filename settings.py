@@ -8,6 +8,7 @@ ACTIVATION = 'relu'
 N = 400000  # (Maximum) Training data size
 SPARSE = 1  # Number of timesteps to skip when creating training data
 PREDICTION_TIME_STEP = 0.05
+WINDOW_LABELS = ["X", "Y", "T"]
 
 """
 Structure of data

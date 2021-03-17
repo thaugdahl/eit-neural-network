@@ -15,6 +15,9 @@ from utils import get_injection_data, get_target_predictions, split_predictions,
 # TODO: Make injection more general -
 #  should be possible to have several injection functions, as you can have several injection layers
 if __name__ == '__main__':
+    # Labels
+    labels = WINDOW_LABELS
+
     # Set function to be used for injection
     injection_func = multiply_variables
 
@@ -37,16 +40,15 @@ if __name__ == '__main__':
     training_time_step = abs(in_test[0][0][-1] - in_test[0][1][-1])
 
     # Retrieve derivative predictions
-    target_predictions = get_target_predictions(in_test, injection_func, nn_inj)
+    target_predictions = get_target_predictions(in_test, nn_inj, injection_func)
     # Plot derivatives for each variable
     train_t_axis = np.arange(0, in_test[-1][-1][-1] - in_test[0][-1][-1] + training_time_step, training_time_step)
     value_predictions = split_predictions(target_predictions, DATA_NUM_VARIABLES - 1)
     actual_values = split_values(target_test, DATA_NUM_VARIABLES - 1)
-    plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives with PGML")
+    plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives with PGML", labels=WINDOW_LABELS)
 
     pred_t_axis = np.arange(0, in_test[-1][-1][-1], PREDICTION_TIME_STEP)
     # Then need to predict for the future. Try to see if they match validation data
-    # TODO: Bytt len(pred_t_axis) med store-T (in-test[-1][-1][-1])
     predictions = get_predictions(starting_point, PREDICTION_TIME_STEP, nn_inj, in_test[-1][-1][-1], injection_func)
 
     # Plot prediction accuracy
@@ -61,44 +63,24 @@ if __name__ == '__main__':
 
     nn_reg.compile(optimizer=OPTIMIZER, loss=LOSS)
     history = nn_reg.fit(x=[in_train], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT)
-    nn_reg.summary()
-
-    plt.plot(history.history['loss'], label='MSE training data without PGML')
+    plot_training_summary(history, title="Training plot without PGML")
 
     # Get derivatives and plot for the network
-    derivative_predictions_reg = []
-    for i in range(len(in_test)):
-        derivative_predictions_reg.append(nn_reg.predict(x=[np.array([in_test[i]])]))
-
-    # TODO: Make general
-    x_axis = [time_step * i for i in range(len(in_test))]
-    x_derivative_predictions_reg = [derivative_predictions_reg[i][0][0] for i in range(len(derivative_predictions_reg))]
-    y_derivative_predictions_reg = [derivative_predictions_reg[i][0][1] for i in range(len(derivative_predictions_reg))]
-    # Plot derivatives
-    plot_derivatives(x_axis, [actual_x_derivatives, actual_y_derivatives],
-                     [x_derivative_predictions_reg, y_derivative_predictions_reg], title="Derivatives without PGML")
+    target_predictions = get_target_predictions(in_test, nn_reg, inj_func=None)
+    # Plot derivatives for each variable
+    value_predictions = split_predictions(target_predictions, DATA_NUM_VARIABLES - 1)  # Update predictions
+    plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives without PGML")
 
     # Then predict for future...
-    predictions_reg = get_predictions(starting_point, time_step, nn_reg, len(in_test))
+    predictions = get_predictions(starting_point, PREDICTION_TIME_STEP, nn_reg, in_test[-1][-1][-1])
 
-    # This is expected to be perfect, else something is wrong
-    t_accuracy = mean_squared_error([i[0][2] for i in in_test], [j[2] for j in predictions_reg])
-    print("T-Accuracy without PGML: {}".format(t_accuracy))
+    # Plot prediction accuracy
+    title = "Trained on {} datapoints, window-length {}, time-step {}".format(
+        len(in_train), SLIDING_WINDOW_LENGTH, PREDICTION_TIME_STEP)
+    plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title)
 
-    title = "Trained on {} datapoints, window-length {}, time-step {}".format(len(in_train), SLIDING_WINDOW_LENGTH,
-                                                                              time_step)
-    plot_prediction_accuracy(in_test, predictions_reg, time_step, DATA_NUM_VARIABLES - 1, title)
-
-    # When predictions is obtained, compare with validation data
-    x_accuracy = mean_squared_error([i[0][0] for i in in_test], [j[0] for j in predictions_reg])
-    print("X-Accuracy without PGML: {}".format(x_accuracy))
-    y_accuracy = mean_squared_error([i[0][1] for i in in_test], [j[1] for j in predictions_reg])
-    print("Y-Accuracy without PGML: {}".format(y_accuracy))
-
-
-
-
-
+    # Plot the mse between all actual values and all predicted values for the future
+    plot_prediction_summary(in_test, predictions, ["X", "Y", "T"], "Prediction Summary without PGML")
 
 
 
