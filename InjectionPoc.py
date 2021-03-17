@@ -8,16 +8,33 @@ from typing import Union
 from tqdm import tqdm
 
 
-def get_predictions(starting_point, time_step, nn, prediction_len, injection_func=None):
+def get_predictions(starting_point, time_step, nn, terminal_time, injection_func=None):
     """
     Returns "prediction_len" predictions (obtained by backfeeding) from the starting-point.
     :param starting_point: The starting-point (where to start predicting from)
     :param time_step: The time-step between two predictions
     :param nn: The nn to use for predicting
-    :param prediction_len: The number of predictions to make
+    :param terminal_time: Stop prediction when this time is reached
     :param injection_func: The function to use to calculate the injection (based on the whole window for a step)
     :return: A list of predictions
     """
+    predictions = []
+    last_step = starting_point
+    while last_step[-1] <= terminal_time:
+        if injection_func:
+            injection = np.array([injection_func(last_step)])
+            prediction = nn.predict(x=[np.array([last_step]), injection])[0]
+        else:
+            prediction = nn.predict(x=[np.array([last_step])])[0]
+
+        np.hstack(prediction, np.array([1]))
+        new_step = last_step + prediction * time_step
+        predictions.append(new_step)
+        last_step = new_step
+
+
+
+
     predictions = []
     last_step = starting_point
     for _ in tqdm(range(prediction_len)):
@@ -27,6 +44,7 @@ def get_predictions(starting_point, time_step, nn, prediction_len, injection_fun
         else:
             derivatives = nn.predict(x=[np.array([last_step])])[0]
         # x(t+1) = x(t) + x´(t) * delta(t)
+        # TODO: Make general for more variables
         new_x = last_step[-1][0] + derivatives[0] * time_step
         new_y = last_step[-1][1] + derivatives[1] * time_step
         new_time = last_step[-1][-1] + time_step

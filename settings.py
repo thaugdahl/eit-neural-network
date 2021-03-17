@@ -5,7 +5,9 @@ PREDICTION_SPLIT = 0.01
 NN_HIDDEN_LAYERS = (32, 64, 32)
 INJECTION_LAYERS = {1: (1, )}
 ACTIVATION = 'relu'
-
+N = 400000  # (Maximum) Training data size
+SPARSE = 1  # Number of timesteps to skip when creating training data
+PREDICTION_TIME_STEP = 0.05
 
 """
 Structure of data
