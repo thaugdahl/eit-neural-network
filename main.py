@@ -7,7 +7,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from math import floor, isnan
 from plotting import plot_prediction_accuracy, plot_derivatives, plot_training_summary, plot_prediction_summary
-from InjectionFunctions import multiply_variables, inject_constant
+from InjectionFunctions import multiply_variables, inject_constant, xy
 from utils import get_injection_data, get_target_predictions, split_predictions, split_values
 
 # TODO: Add labels for all plots
@@ -16,7 +16,7 @@ from utils import get_injection_data, get_target_predictions, split_predictions,
 #  should be possible to have several injection functions, as you can have several injection layers
 if __name__ == '__main__':
     # Set function to be used for injection
-    injection_func = multiply_variables
+    injection_func = xy
 
     # Generate some training- and test-data
     in_data, target_data = get_data("DenseLV.tsv", N, SPARSE, SLIDING_WINDOW_LENGTH)
@@ -26,14 +26,15 @@ if __name__ == '__main__':
     nn_inj = gen_nn(NN_HIDDEN_LAYERS, INJECTION_LAYERS, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
 
     # Create the injection data
-    injection_data = get_injection_data(in_train, injection_func)
+    injection_data = injection_func(np.transpose(in_train[:,-1,:]))
+    #injection_data = get_injection_data(in_train, injection_func)
 
     # Train the NN
     nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
     history = nn_inj.fit(x=[in_train, injection_data], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT)
     plot_training_summary(history, title="Training plot with PGML")
 
-    starting_point = in_train[-1]
+    starting_window = in_train[-1]
     training_time_step = abs(in_test[0][0][-1] - in_test[0][1][-1])
 
     # Retrieve derivative predictions
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     pred_t_axis = np.arange(0, in_test[-1][-1][-1], PREDICTION_TIME_STEP)
     # Then need to predict for the future. Try to see if they match validation data
     # TODO: Bytt len(pred_t_axis) med store-T (in-test[-1][-1][-1])
-    predictions = get_predictions(starting_point, PREDICTION_TIME_STEP, nn_inj, in_test[-1][-1][-1], injection_func)
+    predictions = get_predictions(starting_window, PREDICTION_TIME_STEP, nn_inj, in_test[-1][-1][-1], injection_func)
 
     # Plot prediction accuracy
     title = "PGML Trained on {} datapoints, window-length {}, time-step {}".format(len(in_train), SLIDING_WINDOW_LENGTH, PREDICTION_TIME_STEP)
@@ -79,7 +80,7 @@ if __name__ == '__main__':
                      [x_derivative_predictions_reg, y_derivative_predictions_reg], title="Derivatives without PGML")
 
     # Then predict for future...
-    predictions_reg = get_predictions(starting_point, time_step, nn_reg, len(in_test))
+    predictions_reg = get_predictions(starting_window, time_step, nn_reg, len(in_test))
 
     # This is expected to be perfect, else something is wrong
     t_accuracy = mean_squared_error([i[0][2] for i in in_test], [j[2] for j in predictions_reg])

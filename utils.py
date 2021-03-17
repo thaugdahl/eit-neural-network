@@ -25,7 +25,7 @@ def get_target_predictions(in_data, inj_func, nn):
     """
     predictions = []
     for i in range(len(in_data)):
-        injection = np.array([inj_func(in_data[i])])
+        injection = np.array([inj_func(in_data[i][-1])])
         predictions.append(nn.predict(x=[np.array([in_data[i]]), injection]))
     return np.array(predictions)
 

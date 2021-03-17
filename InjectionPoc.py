@@ -8,9 +8,9 @@ from typing import Union
 from tqdm import tqdm
 
 
-def get_predictions(starting_point, time_step, nn, terminal_time, injection_func=None):
+def get_predictions(starting_window, time_step, nn, terminal_time, injection_func=None):
     """
-    Returns "prediction_len" predictions (obtained by backfeeding) from the starting-point.
+    Returns predictions over the time interval from starting_point to terminal_time (obtained by backfeeding) from the starting-point.
     :param starting_point: The starting-point (where to start predicting from)
     :param time_step: The time-step between two predictions
     :param nn: The nn to use for predicting
@@ -19,22 +19,27 @@ def get_predictions(starting_point, time_step, nn, terminal_time, injection_func
     :return: A list of predictions
     """
     predictions = []
-    last_step = starting_point
+    last_window = starting_window
+    last_step = last_window[-1]
+    
     while last_step[-1] <= terminal_time:
         if injection_func:
-            injection = np.array([injection_func(last_step)])
-            prediction = nn.predict(x=[np.array([last_step]), injection])[0]
+            prediction = nn.predict(x=[np.array([last_window]), np.array([injection_func(last_step)])])[0]
         else:
-            prediction = nn.predict(x=[np.array([last_step])])[0]
+            prediction = nn.predict(x=[np.array([last_window])])[0]
 
-        np.hstack(prediction, np.array([1]))
+        prediction = np.hstack((prediction, np.array([1])))
         new_step = last_step + prediction * time_step
+        new_window = np.vstack((last_window[1:],new_step))
         predictions.append(new_step)
         last_step = new_step
+        
+    predictions = np.array(predictions)
+    return predictions
 
 
 
-
+"""
     predictions = []
     last_step = starting_point
     for _ in tqdm(range(prediction_len)):
@@ -53,7 +58,7 @@ def get_predictions(starting_point, time_step, nn, terminal_time, injection_func
         last_step = np.array(last_step[1:].tolist() + [new_step])
 
     return predictions
-
+"""
 
 def gen_input_layer(shape: tuple):
     """
