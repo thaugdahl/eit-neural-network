@@ -38,3 +38,19 @@ def plot_prediction_accuracy(test_data, predictions, time_step, num_vars, title)
     plt.legend()
     plt.show()
 
+
+def plot_derivatives(x_axis, derivatives, predictions):
+    """
+    Plots the actual derivatives vs. the given predictions.
+    :param x_axis: The values for the x-axis
+    :param derivatives: Nested list with derivatives for each variable
+    :param predictions: Nested list with derivative predictions for each variable
+    """
+    plt.figure()
+    for i in range(len(derivatives)):
+        plt.plot(x_axis, derivatives[i], label="Actual values {}".format(i))
+        plt.plot(x_axis, predictions[i], label="Predictions {}".format(i))
+    plt.xlabel("Derivatives")
+    plt.legend()
+    plt.show()
+

@@ -8,7 +8,7 @@ from typing import Union
 from tqdm import tqdm
 
 
-def get_predictions(starting_point, time_step, nn, prediction_len, injection_func):
+def get_predictions(starting_point, time_step, nn, prediction_len, injection_func=None):
     """
     Returns "prediction_len" predictions (obtained by backfeeding) from the starting-point.
     :param starting_point: The starting-point (where to start predicting from)
@@ -21,8 +21,11 @@ def get_predictions(starting_point, time_step, nn, prediction_len, injection_fun
     predictions = []
     last_step = starting_point
     for _ in tqdm(range(prediction_len)):
-        injection = np.array([injection_func(last_step)])
-        derivatives = nn.predict(x=[np.array([last_step]), injection])[0]
+        if injection_func:
+            injection = np.array([injection_func(last_step)])
+            derivatives = nn.predict(x=[np.array([last_step]), injection])[0]
+        else:
+            derivatives = nn.predict(x=[np.array([last_step])])[0]
         # x(t+1) = x(t) + x´(t) * delta(t)
         new_x = last_step[-1][0] + derivatives[0] * time_step
         new_y = last_step[-1][1] + derivatives[1] * time_step

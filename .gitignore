@@ -1,3 +1,6 @@
+# Training data
+*.tsv
+
 # Tensorflow
 /logs/*
 logs/

@@ -120,9 +120,9 @@ def tsv2arr(filename):
 # x = tsv2arr("eit_test.tsv")
 
 
+if __name__ == '__main__':
+    generateTrainingData(saveResults=True)
 """
-#if __name__ == '__main__':
-#    generateTrainingData(saveResults=True)
 # Generate dataset and set saveResults to true or false
 dataset = generateTrainingData(saveResults=True)
 # Plot (segment of) solution
