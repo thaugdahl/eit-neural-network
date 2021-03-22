@@ -9,6 +9,8 @@ def multiply_variables(row):
         final_value *= row[-1][i]
     return final_value
 
+def xy(vect):
+    return vect[0]*vect[1]
 
 def inject_constant(row):
     """

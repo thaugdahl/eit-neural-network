@@ -93,8 +93,8 @@ def plot_prediction_summary(actual, predictions, labels=None, header=None):
     if header:
         print(header)
     if not labels:
-        labels = [i for i in range(len(predictions))]
-    for i in range(len(predictions)):
-        accuracy = mean_squared_error([d[0][i] for d in actual], [j[i] for j in predictions])
+        labels = [i for i in range(len(predictions[0]))]
+    for i in range(len(predictions[0])):
+        accuracy = mean_squared_error([d[-1][i] for d in actual], [j[i] for j in predictions])
         print("{}-Accuracy: {}".format(labels[i], accuracy))
 
