@@ -6,7 +6,7 @@ NN_HIDDEN_LAYERS = (32, 64, 32)
 INJECTION_LAYERS = {1: (1, )}
 ACTIVATION = 'relu'
 N = 400000  # (Maximum) Training data size
-SPARSE = 3  # Number of timesteps to skip when creating training data
+SPARSE = 1  # Number of timesteps to skip when creating training data
 PREDICTION_TIME_STEP = 0.05
 WINDOW_LABELS = ["X", "Y", "T"]
 
