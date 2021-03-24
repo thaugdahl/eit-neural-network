@@ -12,6 +12,7 @@ from os import path
 from numpy import genfromtxt
 import equations as eq
 from tqdm import tqdm
+from random import shuffle
 
 
 def rk4step(tn,xn,f,h):
@@ -96,10 +97,10 @@ def generateTrainingData(saveResults=False):
     # Set other parameters
     f = eq.lotka_volterra
     t = 0.0
-    T = 1000
+    T = 200
     h = 0.05
 
-    x0 = np.array([[12+5*i,2] for i in range(1,21)])
+    x0 = np.array([[12+i,2] for i in range(1,21)] + [[22,2]])  
     nRuns,d = x0.shape
     dataset = np.zeros((0,4),dtype=float)
     for run in range(int(nRuns)):
@@ -121,7 +122,10 @@ def tsv2arr(filename):
 
 
 if __name__ == '__main__':
-    generateTrainingData(saveResults=True)
+    dataset = generateTrainingData(saveResults=True)
+    firstRow = 0
+    lastRow = 10000000
+    plotSolution(dataset,firstRow,lastRow,'pp')
 """
 # Generate dataset and set saveResults to true or false
 dataset = generateTrainingData(saveResults=True)

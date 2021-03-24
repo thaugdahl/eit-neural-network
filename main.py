@@ -46,6 +46,7 @@ if __name__ == '__main__':
 
     starting_window = in_train[-1]
     training_time_step = abs(in_test[0][0][-1] - in_test[0][1][-1])
+    prediction_time_step = training_time_step/PREDICTION_TIME_STEP_MULTIPLIER
 
     # Retrieve derivative predictions
     target_predictions = get_target_predictions(in_test, nn_inj, injection_func)
@@ -56,11 +57,11 @@ if __name__ == '__main__':
     plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives with PGML", labels=WINDOW_LABELS)
 
     # Then need to predict for the future. Try to see if they match validation data
-    predictions = get_predictions(starting_window, PREDICTION_TIME_STEP * SPARSE, nn_inj, in_test[-1][-1][-1], injection_func)
-    pred_t_axis = [i * round(PREDICTION_TIME_STEP * SPARSE, 2) for i in range(len(predictions))]
+    predictions = get_predictions(starting_window, prediction_time_step, nn_inj, in_test[-1][-1][-1], injection_func)
+    pred_t_axis = [i * round(prediction_time_step, 2) for i in range(len(predictions))]
 
     # Plot prediction accuracy
-    title = "PGML Trained on {} datapoints, window-length {}, time-step {}".format(len(in_train), SLIDING_WINDOW_LENGTH, PREDICTION_TIME_STEP)
+    title = "PGML Trained on {} datapoints, window-length {}, time-step {}".format(len(in_train), SLIDING_WINDOW_LENGTH, prediction_time_step)
     plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
 
     # Plot the mse between all actual values and all predicted values for the future
@@ -80,11 +81,11 @@ if __name__ == '__main__':
     plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives without PGML", labels=WINDOW_LABELS)
 
     # Then predict for future...
-    predictions = get_predictions(starting_window, PREDICTION_TIME_STEP * SPARSE, nn_reg, in_test[-1][-1][-1])
+    predictions = get_predictions(starting_window, prediction_time_step, nn_reg, in_test[-1][-1][-1])
 
     # Plot prediction accuracy
     title = "Trained on {} datapoints, window-length {}, time-step {}".format(
-        len(in_train), SLIDING_WINDOW_LENGTH, PREDICTION_TIME_STEP)
+        len(in_train), SLIDING_WINDOW_LENGTH, prediction_time_step)
     plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
 
     # Plot the mse between all actual values and all predicted values for the future

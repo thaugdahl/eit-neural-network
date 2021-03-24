@@ -1,43 +1,36 @@
 import matplotlib.pyplot as plt
 from math import isnan
 from sklearn.metrics import mean_squared_error
+from settings import *
 
 
 def plot_prediction_accuracy(test_data, predictions, t_axis, num_vars, title, labels=None):
     """
     Plots a figure with graphs for the predicted data and the actual data.
-    :param test_data: The test-data that we wish to predict
+    :param test_data: The test-data that we wish to predict, as a list of sliding windows
     :param predictions: The predictions to compare with test-data
-    :param t_axis: The axis for time
+    :param t_axis: The axis for time in the predicted dataset
     :param num_vars: The number of variables that are relevant in each data-row
     :param title: The title of the figure
     :param labels: The list of labels for each predicted variable
     """
     plt.figure()
     plt.title(title)
-    valid_predictions = [i for i in predictions if not isnan(i[0]) and not isnan(i[1])]
-    actual_values = [i[-1] for i in test_data]
-    prediction_axises = []
-    for i in range(num_vars):
-        prediction_axises.append([j[i] for j in valid_predictions])
-
-    # Limit plot y-values
-    largest_val = float("-inf")
-    for i in range(len(prediction_axises)):
-        if prediction_axises[i][0] > largest_val:
-            largest_val = prediction_axises[i][0]
-    # plt.ylim(largest_val * (-5), largest_val * 5)
+    actual_values = test_data[:,-1,:]
+    actual_t_axis = actual_values[:,-1] - actual_values[0,-1]
+    prediction_t_axis= predictions[:,-1] - predictions[0,-1]
+    
 
     if not labels:
         labels = [i for i in range(len(predictions))]
 
     # Plot all predictions and compare with actual data
-    for i in range(len(prediction_axises)):
+    for i in range(0,num_vars):
         # Plot predicted data
-        plt.plot(t_axis[:len(prediction_axises[i])], prediction_axises[i], label="Predictions {}".format(labels[i]))
+        plt.plot(prediction_t_axis, predictions[:,i], label="Predictions {}".format(labels[i]))
         # Plot actual data
-        actual = [j[i] for j in actual_values]
-        plt.plot(t_axis, actual, label="Actual data {}".format(labels[i]))
+
+        plt.plot(actual_t_axis, actual_values[:,i], label="Actual data {}".format(labels[i]))
 
     plt.legend()
     plt.show()
@@ -95,6 +88,6 @@ def plot_prediction_summary(actual, predictions, labels=None, header=None):
     if not labels:
         labels = [i for i in range(len(predictions[0]))]
     for i in range(len(predictions[0])):
-        accuracy = mean_squared_error([d[-1][i] for d in actual], [j[i] for j in predictions])
+        accuracy = mean_squared_error(actual[:,-1,i], predictions[::PREDICTION_TIME_STEP_MULTIPLIER,[i]])
         print("{}-Accuracy: {}".format(labels[i], accuracy))
 
