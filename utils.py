@@ -24,10 +24,11 @@ def get_target_predictions(in_data, nn, inj_func=None):
     :return: A list of predictions for the target values
     """
     predictions = []
+    if inj_func:    
+        injection_data = inj_func(in_data)
     for i in range(len(in_data)):
         if inj_func:
-            injection = np.array([inj_func(in_data[i][-1])])
-            predictions.append(nn.predict(x=[np.array([in_data[i]]), injection]))
+            predictions.append(nn.predict(x=[np.array([in_data[i]]), np.array([injection_data[i]])]))
         else:
             predictions.append(nn.predict(x=[np.array([in_data[i]])]))
 
@@ -60,4 +61,5 @@ def split_values(targets, n):
     for i in range(n):
         actual_values.append(targets[:, i])
     return actual_values
+
 
