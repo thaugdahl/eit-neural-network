@@ -10,7 +10,7 @@ def multiply_variables(row):
     return final_value
 
 def xy(vect):
-    return vect[0]*vect[1]
+    return vect[:,:,0]*vect[:,:,1]
 
 def inject_constant(row):
     """
@@ -19,3 +19,5 @@ def inject_constant(row):
     :return: Returns the int 1
     """
     return 1
+
+    

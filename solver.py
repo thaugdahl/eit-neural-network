@@ -96,7 +96,7 @@ def generateTrainingData(saveResults=False):
     # Set other parameters
     f = eq.lotka_volterra
     t = 0.0
-    T = 200
+    T = 1000
     h = 0.05
 
     x0 = np.array([[12+i,2] for i in range(1,101)])

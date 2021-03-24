@@ -21,9 +21,10 @@ def get_predictions(starting_window, time_step, nn, terminal_time, injection_fun
     predictions = []
     last_window = starting_window
     last_step = last_window[-1]
+    
     while round(last_step[-1], 2) < round(terminal_time, 2):
         if injection_func:
-            prediction = nn.predict(x=[np.array([last_window]), np.array([injection_func(last_step)])])[0]
+            prediction = nn.predict(x=[np.array([last_window]), np.array([injection_func(np.array([last_window]))])[0]])[0]
         else:
             prediction = nn.predict(x=[np.array([last_window])])[0]
 

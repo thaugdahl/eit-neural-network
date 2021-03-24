@@ -32,16 +32,17 @@ if __name__ == '__main__':
 
     # Create callback for tensorboard
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    """
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir=log_dir, histogram_freq=1)
-
+    """
+    
     # Create the injection data
-    injection_data = injection_func(np.transpose(in_train[:,-1,:]))
+    injection_data = injection_func(in_train)
 
     # Train the NN
     nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
-    history = nn_inj.fit(x=[in_train, injection_data], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT,
-                         callbacks=[tensorboard_callback])
+    history = nn_inj.fit(x=[in_train, injection_data], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT)
     plot_training_summary(history, title="Training plot with PGML")
 
     starting_window = in_train[-1]
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     nn_reg = gen_nn(NN_HIDDEN_LAYERS, {}, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
 
     nn_reg.compile(optimizer=OPTIMIZER, loss=LOSS)
-    history = nn_reg.fit(x=[in_train], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT, callbacks=[tensorboard_callback])
+    history = nn_reg.fit(x=[in_train], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT)
     plot_training_summary(history, title="Training plot without PGML")
 
     # Get derivatives and plot for the network
