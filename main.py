@@ -58,11 +58,11 @@ if __name__ == '__main__':
 
     # Then need to predict for the future. Try to see if they match validation data
     predictions = get_predictions(starting_window, prediction_time_step, nn_inj, in_test[-1][-1][-1], injection_func)
-    pred_t_axis = [i * round(prediction_time_step, 2) for i in range(len(predictions))]
+    
 
     # Plot prediction accuracy
     title = "PGML Trained on {} datapoints, window-length {}, time-step {}".format(len(in_train), SLIDING_WINDOW_LENGTH, prediction_time_step)
-    plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
+    plot_prediction_accuracy(in_test, predictions, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
 
     # Plot the mse between all actual values and all predicted values for the future
     plot_prediction_summary(in_test, predictions, WINDOW_LABELS, "Prediction Summary with PGML")
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     # Plot prediction accuracy
     title = "Trained on {} datapoints, window-length {}, time-step {}".format(
         len(in_train), SLIDING_WINDOW_LENGTH, prediction_time_step)
-    plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
+    plot_prediction_accuracy(in_test, predictions, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
 
     # Plot the mse between all actual values and all predicted values for the future
     plot_prediction_summary(in_test, predictions, WINDOW_LABELS, "Prediction Summary without PGML")

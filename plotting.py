@@ -4,7 +4,7 @@ from sklearn.metrics import mean_squared_error
 from settings import *
 
 
-def plot_prediction_accuracy(test_data, predictions, t_axis, num_vars, title, labels=None):
+def plot_prediction_accuracy(test_data, predictions, num_vars, title, labels=None):
     """
     Plots a figure with graphs for the predicted data and the actual data.
     :param test_data: The test-data that we wish to predict, as a list of sliding windows
