@@ -37,7 +37,7 @@ def plot_prediction_accuracy(test_data, predictions, t_axis, num_vars, title, la
         plt.plot(t_axis[:len(prediction_axises[i])], prediction_axises[i], label="Predictions {}".format(labels[i]))
         # Plot actual data
         actual = [j[i] for j in actual_values]
-        plt.plot(t_axis, actual, label="Actual data {}".format(i))
+        plt.plot(t_axis, actual, label="Actual data {}".format(labels[i]))
 
     plt.legend()
     plt.show()

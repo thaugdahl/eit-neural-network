@@ -61,10 +61,10 @@ if __name__ == '__main__':
 
     # Plot prediction accuracy
     title = "PGML Trained on {} datapoints, window-length {}, time-step {}".format(len(in_train), SLIDING_WINDOW_LENGTH, PREDICTION_TIME_STEP)
-    plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title)
+    plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
 
     # Plot the mse between all actual values and all predicted values for the future
-    plot_prediction_summary(in_test, predictions, ["X", "Y", "T"], "Prediction Summary with PGML")
+    plot_prediction_summary(in_test, predictions, WINDOW_LABELS, "Prediction Summary with PGML")
 
     # Now repeat the process on a regular neural network without injection to compare
     nn_reg = gen_nn(NN_HIDDEN_LAYERS, {}, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     target_predictions = get_target_predictions(in_test, nn_reg, inj_func=None)
     # Plot derivatives for each variable
     value_predictions = split_predictions(target_predictions, DATA_NUM_VARIABLES - 1)  # Update predictions
-    plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives without PGML")
+    plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives without PGML", labels=WINDOW_LABELS)
 
     # Then predict for future...
     predictions = get_predictions(starting_window, PREDICTION_TIME_STEP * SPARSE, nn_reg, in_test[-1][-1][-1])
@@ -85,10 +85,10 @@ if __name__ == '__main__':
     # Plot prediction accuracy
     title = "Trained on {} datapoints, window-length {}, time-step {}".format(
         len(in_train), SLIDING_WINDOW_LENGTH, PREDICTION_TIME_STEP)
-    plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title)
+    plot_prediction_accuracy(in_test, predictions, pred_t_axis, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
 
     # Plot the mse between all actual values and all predicted values for the future
-    plot_prediction_summary(in_test, predictions, ["X", "Y", "T"], "Prediction Summary without PGML")
+    plot_prediction_summary(in_test, predictions, WINDOW_LABELS, "Prediction Summary without PGML")
 
 
 
