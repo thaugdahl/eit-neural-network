@@ -23,7 +23,7 @@ if __name__ == '__main__':
     injection_func = xy
 
     # Generate some training- and test-data
-    in_data, target_data = get_data("DenseLV.tsv", N, SPARSE, SLIDING_WINDOW_LENGTH)
+    in_data, target_data = get_data(DATA_FILE, N, SPARSE, SLIDING_WINDOW_LENGTH)
     in_train, in_test, target_train, target_test = split_data(in_data, target_data, PREDICTION_SPLIT)
 
     # Generate the neural network for injection

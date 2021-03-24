@@ -99,7 +99,7 @@ def generateTrainingData(saveResults=False):
     T = 1000
     h = 0.05
 
-    x0 = np.array([[12+i,2] for i in range(1,101)])
+    x0 = np.array([[12+5*i,2] for i in range(1,21)])
     nRuns,d = x0.shape
     dataset = np.zeros((0,4),dtype=float)
     for run in range(int(nRuns)):
