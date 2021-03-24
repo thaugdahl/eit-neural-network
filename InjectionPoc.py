@@ -6,16 +6,17 @@ from settings import NN_HIDDEN_LAYERS, LOSS, OPTIMIZER, INJECTION_LAYERS
 import math
 from typing import Union
 from tqdm import tqdm
+from utils import get_in_data_for_nn, create_injection_data
 
 
-def get_predictions(starting_window, time_step, nn, terminal_time, injection_func=None):
+def get_predictions(starting_window, time_step, nn, terminal_time, injection_layers=None):
     """
     Returns predictions over the time interval from starting_point to terminal_time (obtained by backfeeding) from the starting-point.
     :param starting_window: The starting-window (where to start predicting from)
     :param time_step: The time-step between two predictions
     :param nn: The nn to use for predicting
     :param terminal_time: Stop prediction when this time is reached
-    :param injection_func: The function to use to calculate the injection (based on the whole window for a step)
+    :param injection_layers: The injection layers (which define the injection function to use for each layer)
     :return: A list of predictions
     """
     predictions = []
@@ -23,8 +24,11 @@ def get_predictions(starting_window, time_step, nn, terminal_time, injection_fun
     last_step = last_window[-1]
     
     while round(last_step[-1], 2) < round(terminal_time, 2):
-        if injection_func:
-            prediction = nn.predict(x=[np.array([last_window]), np.array([injection_func(np.array([last_window]))])[0]])[0]
+        if injection_layers:
+            injection_data = create_injection_data(injection_layers, np.array([last_window]))
+            x_data = get_in_data_for_nn([last_window], injection_data)
+            prediction = nn.predict(x=x_data)[0]
+            # prediction = nn.predict(x=[np.array([last_window]), np.array([injection_func(np.array([last_window]))])[0]])[0]
         else:
             prediction = nn.predict(x=[np.array([last_window])])[0]
 

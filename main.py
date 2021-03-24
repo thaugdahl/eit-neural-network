@@ -7,13 +7,15 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from math import floor, isnan
 from plotting import plot_prediction_accuracy, plot_derivatives, plot_training_summary, plot_prediction_summary
-from InjectionFunctions import multiply_variables, inject_constant, xy
-from utils import get_injection_data, get_target_predictions, split_predictions, split_values
+from InjectionFunctions import inject_constant, xy
+from utils import get_injection_data, get_target_predictions, split_predictions, split_values, \
+    create_injection_data, get_in_data_for_nn
 import tensorflow as tf
 import datetime
 
 # TODO: Make injection more general -
 #  should be possible to have several injection functions, as you can have several injection layers
+# TODO: train_t_axis should not be made with np.arrange
 # TODO: Automatic handle NAN-values in predictions (plotting should still work)
 if __name__ == '__main__':
     # Labels
@@ -37,18 +39,20 @@ if __name__ == '__main__':
     """
     
     # Create the injection data
-    injection_data = injection_func(in_train)
+    injection_data = create_injection_data(INJECTION_LAYERS, in_train)
 
     # Train the NN
     nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
-    history = nn_inj.fit(x=[in_train, injection_data], y=[target_train], epochs=EPOCHS, validation_split=VALIDATION_SPLIT)
+
+    history = nn_inj.fit(x=get_in_data_for_nn(in_train, injection_data), y=[target_train], epochs=EPOCHS,
+                         validation_split=VALIDATION_SPLIT)
     plot_training_summary(history, title="Training plot with PGML")
 
     starting_window = in_train[-1]
     training_time_step = abs(in_test[0][0][-1] - in_test[0][1][-1])
 
     # Retrieve derivative predictions
-    target_predictions = get_target_predictions(in_test, nn_inj, injection_func)
+    target_predictions = get_target_predictions(in_test, nn_inj, INJECTION_LAYERS)
     # Plot derivatives for each variable
     train_t_axis = np.arange(0, in_test[-1][-1][-1] - in_test[0][-1][-1] + training_time_step, training_time_step)
     value_predictions = split_predictions(target_predictions, DATA_NUM_VARIABLES - 1)
@@ -56,7 +60,7 @@ if __name__ == '__main__':
     plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives with PGML", labels=WINDOW_LABELS)
 
     # Then need to predict for the future. Try to see if they match validation data
-    predictions = get_predictions(starting_window, PREDICTION_TIME_STEP * SPARSE, nn_inj, in_test[-1][-1][-1], injection_func)
+    predictions = get_predictions(starting_window, PREDICTION_TIME_STEP * SPARSE, nn_inj, in_test[-1][-1][-1], INJECTION_LAYERS)
     pred_t_axis = [i * round(PREDICTION_TIME_STEP * SPARSE, 2) for i in range(len(predictions))]
 
     # Plot prediction accuracy
@@ -74,7 +78,7 @@ if __name__ == '__main__':
     plot_training_summary(history, title="Training plot without PGML")
 
     # Get derivatives and plot for the network
-    target_predictions = get_target_predictions(in_test, nn_reg, inj_func=None)
+    target_predictions = get_target_predictions(in_test, nn_reg, inj_layers=None)
     # Plot derivatives for each variable
     value_predictions = split_predictions(target_predictions, DATA_NUM_VARIABLES - 1)  # Update predictions
     plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives without PGML", labels=WINDOW_LABELS)
