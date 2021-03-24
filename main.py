@@ -12,7 +12,6 @@ from utils import get_injection_data, get_target_predictions, split_predictions,
 import tensorflow as tf
 import datetime
 
-# TODO: Add labels for all plots
 # TODO: Make injection more general -
 #  should be possible to have several injection functions, as you can have several injection layers
 # TODO: Automatic handle NAN-values in predictions (plotting should still work)

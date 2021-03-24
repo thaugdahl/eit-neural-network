@@ -70,7 +70,7 @@ def gen_nn(hidden_layers: tuple, injection_nodes: dict, window: int, series_leng
         # If injection for this layer
         if i in injection_nodes.keys():
             # Create injection layer
-            injection_layer = gen_input_layer(injection_nodes[i])
+            injection_layer = gen_input_layer(injection_nodes[i]["shape"])
             flatten_injection_layer = tf.keras.layers.Flatten()(injection_layer)
 
             # Add proxy level
