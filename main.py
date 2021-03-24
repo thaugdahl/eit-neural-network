@@ -9,9 +9,10 @@ from math import floor, isnan
 from plotting import plot_prediction_accuracy, plot_derivatives, plot_training_summary, plot_prediction_summary
 from InjectionFunctions import multiply_variables, inject_constant, xy
 from utils import get_injection_data, get_target_predictions, split_predictions, split_values
+import tensorflow as tf
+import datetime
 
 # TODO: Add labels for all plots
-# TODO: Sort code into functions
 # TODO: Make injection more general -
 #  should be possible to have several injection functions, as you can have several injection layers
 if __name__ == '__main__':
@@ -28,12 +29,18 @@ if __name__ == '__main__':
     # Generate the neural network for injection
     nn_inj = gen_nn(NN_HIDDEN_LAYERS, INJECTION_LAYERS, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
 
+    # Create callback for tensorboard
+    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+        log_dir=log_dir, histogram_freq=1)
+
     # Create the injection data
     injection_data = injection_func(np.transpose(in_train[:,-1,:]))
 
     # Train the NN
     nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
-    history = nn_inj.fit(x=[in_train, injection_data], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT)
+    history = nn_inj.fit(x=[in_train, injection_data], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT,
+                         callbacks=[tensorboard_callback])
     plot_training_summary(history, title="Training plot with PGML")
 
     starting_window = in_train[-1]
@@ -62,7 +69,7 @@ if __name__ == '__main__':
     nn_reg = gen_nn(NN_HIDDEN_LAYERS, {}, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
 
     nn_reg.compile(optimizer=OPTIMIZER, loss=LOSS)
-    history = nn_reg.fit(x=[in_train], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT)
+    history = nn_reg.fit(x=[in_train], y=[target_train], epochs=10, validation_split=VALIDATION_SPLIT, callbacks=[tensorboard_callback])
     plot_training_summary(history, title="Training plot without PGML")
 
     # Get derivatives and plot for the network
