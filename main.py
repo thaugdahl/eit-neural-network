@@ -13,9 +13,6 @@ from utils import get_injection_data, get_target_predictions, split_predictions,
 import tensorflow as tf
 import datetime
 
-# TODO: Make injection more general -
-#  should be possible to have several injection functions, as you can have several injection layers
-# TODO: train_t_axis should not be made with np.arrange
 # TODO: Automatic handle NAN-values in predictions (plotting should still work)
 if __name__ == '__main__':
     # Labels
@@ -55,7 +52,7 @@ if __name__ == '__main__':
     # Retrieve derivative predictions
     target_predictions = get_target_predictions(in_test, nn_inj, INJECTION_LAYERS)
     # Plot derivatives for each variable
-    train_t_axis = np.arange(0, in_test[-1][-1][-1] - in_test[0][-1][-1] + training_time_step, training_time_step)
+    train_t_axis = [round(training_time_step) * i for i in range(len(in_test))]
     value_predictions = split_predictions(target_predictions, DATA_NUM_VARIABLES - 1)
     actual_values = split_values(target_test, DATA_NUM_VARIABLES - 1)
     plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives with PGML", labels=WINDOW_LABELS)
