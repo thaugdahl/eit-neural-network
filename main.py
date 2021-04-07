@@ -36,13 +36,12 @@ if __name__ == '__main__':
     """
 
     # Create the injection data
-    injection_data = injection_func(in_train)
+    injection_data = create_injection_data(INJECTION_LAYERS, in_train)
     
     # Train the NN
     nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
 
-    history = nn_inj.fit(x=get_in_data_for_nn(in_train, injection_data), y=[target_train], epochs=EPOCHS,
-                         validation_split=VALIDATION_SPLIT)
+    history = nn_inj.fit(x=get_in_data_for_nn(in_train, injection_data), y=[target_train], epochs=EPOCHS, validation_split=VALIDATION_SPLIT)
     plot_training_summary(history, title="Training plot with PGML")
     
     starting_window = in_test[1]
@@ -52,13 +51,13 @@ if __name__ == '__main__':
     testing_t_axis = in_test[:prediction_steps,-1,-1]
     
     # Retrieve derivative predictions
-    target_predictions = get_target_predictions(in_test[:prediction_steps], nn_inj, injection_func)[:,0,:]
+    target_predictions = get_target_predictions(in_test[:prediction_steps], nn_inj, INJECTION_LAYERS)[:,0,:]
     # Plot derivatives for each variable
 
     plot_derivatives(testing_t_axis,target_test[:prediction_steps], target_predictions, title="Derivatives with PGML", labels=WINDOW_LABELS)
 
     # Then need to predict for the future. Try to see if they match validation data
-    predictions = get_predictions(starting_window, prediction_time_step, nn_inj, prediction_steps, injection_func)
+    predictions = get_predictions(starting_window, prediction_time_step, nn_inj, prediction_steps, INJECTION_LAYERS)
     
 
     # Plot prediction accuracy
@@ -76,7 +75,7 @@ if __name__ == '__main__':
     plot_training_summary(history, title="Training plot without PGML")
 
     # Get derivatives and plot for the network
-    target_predictions = get_target_predictions(in_test[:prediction_steps,:,:], nn_reg, inj_func=None)[:,0,:]
+    target_predictions = get_target_predictions(in_test[:prediction_steps,:,:], nn_reg)[:,0,:]
     # Plot derivatives for each variable
 
     plot_derivatives(testing_t_axis,target_test[:prediction_steps], target_predictions, title="Derivatives without PGML", labels=WINDOW_LABELS)

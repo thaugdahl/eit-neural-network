@@ -9,11 +9,8 @@ from tqdm import tqdm
 from utils import get_in_data_for_nn, create_injection_data
 
 
-<<<<<<< Updated upstream
-def get_predictions(starting_window, time_step, nn, terminal_time, injection_layers=None):
-=======
-def get_predictions(starting_window, time_step, nn, N, injection_func=None):
->>>>>>> Stashed changes
+
+def get_predictions(starting_window, time_step, nn, N, injection_layers=None):
     """
     Returns predictions over the time interval from starting_point to terminal_time (obtained by backfeeding) from the starting-point.
     :param starting_window: The starting-window (where to start predicting from)
@@ -28,8 +25,8 @@ def get_predictions(starting_window, time_step, nn, N, injection_func=None):
     last_step = last_window[-1]
     
     for i in range(N):
-        if injection_func:
-            prediction = nn.predict(x=[np.array([last_window]), np.array([injection_func(np.array([last_window]))])[0]])[0]
+        if injection_layers:
+            prediction = nn.predict(x=[np.array([last_window]), create_injection_data(injection_layers,np.array([last_window]))[0]])[0]
         else:
             prediction = nn.predict(x=[np.array([last_window])])[0]
 
