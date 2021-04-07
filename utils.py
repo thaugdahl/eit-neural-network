@@ -15,20 +15,23 @@ def get_injection_data(arr, inj_func):
     return injection_data
 
 
-def get_target_predictions(in_data, nn, inj_func=None):
+def get_target_predictions(in_data, nn, inj_layers=None):
     """
     Returns the target predictions obtained by using the neural network over in_data.
     :param in_data: The data that's used as in-data to the nn
-    :param inj_func: The function used for the injection in nn
+    :param inj_layers: Dict that describes the layers that takes injection
     :param nn: The neural network to use for predictions
     :return: A list of predictions for the target values
     """
     predictions = []
-    if inj_func:    
-        injection_data = inj_func(in_data)
+    injection_data = None
+    if inj_layers:
+        injection_data = create_injection_data(inj_layers, in_data)
     for i in range(len(in_data)):
-        if inj_func:
-            predictions.append(nn.predict(x=[np.array([in_data[i]]), np.array([injection_data[i]])]))
+        if inj_layers:
+            pred_injection = np.array([[d] for d in injection_data[:, i, :]])
+            x_data = get_in_data_for_nn([in_data[i]], pred_injection)
+            predictions.append(nn.predict(x=x_data))
         else:
             predictions.append(nn.predict(x=[np.array([in_data[i]])]))
 
@@ -63,3 +66,23 @@ def split_values(targets, n):
     return actual_values
 
 
+def create_injection_data(injection_layers, data):
+    """
+    Creates a numpy array of injection data,
+    based on the injection_layers (which define the injection function to use for each layer) and the input-data.
+    :param injection_layers: The injection-layers
+    :param data: The input-data
+    :return: Numpy array of injection data for each injection-layer
+    """
+    return_data = []
+    for layer in injection_layers.keys():
+        inj_func = injection_layers[layer]["function"]
+        return_data.append(inj_func(data))
+    return np.array(return_data)
+
+
+def get_in_data_for_nn(first_data, injection_data):
+    in_data = [first_data]
+    for d in injection_data:
+        in_data.append(np.array(d))
+    return in_data

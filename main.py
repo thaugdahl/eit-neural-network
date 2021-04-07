@@ -7,13 +7,12 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from math import floor, isnan
 from plotting import plot_prediction_accuracy, plot_derivatives, plot_training_summary, plot_prediction_summary
-from InjectionFunctions import multiply_variables, inject_constant, xy
-from utils import get_injection_data, get_target_predictions, split_predictions, split_values
+from InjectionFunctions import inject_constant, xy
+from utils import get_injection_data, get_target_predictions, split_predictions, split_values, \
+    create_injection_data, get_in_data_for_nn
 import tensorflow as tf
 import datetime
 
-# TODO: Make injection more general -
-#  should be possible to have several injection functions, as you can have several injection layers
 # TODO: Automatic handle NAN-values in predictions (plotting should still work)
 if __name__ == '__main__':
     # Labels
@@ -41,7 +40,9 @@ if __name__ == '__main__':
     
     # Train the NN
     nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
-    history = nn_inj.fit(x=[in_train, injection_data], y=[target_train], epochs=EPOCHS, validation_split=VALIDATION_SPLIT)
+
+    history = nn_inj.fit(x=get_in_data_for_nn(in_train, injection_data), y=[target_train], epochs=EPOCHS,
+                         validation_split=VALIDATION_SPLIT)
     plot_training_summary(history, title="Training plot with PGML")
     
     starting_window = in_test[1]

@@ -6,9 +6,10 @@ from settings import NN_HIDDEN_LAYERS, LOSS, OPTIMIZER, INJECTION_LAYERS
 import math
 from typing import Union
 from tqdm import tqdm
+from utils import get_in_data_for_nn, create_injection_data
 
 
-def get_predictions(starting_window, time_step, nn, terminal_time, injection_func=None):
+def get_predictions(starting_window, time_step, nn, terminal_time, injection_layers=None):
     """
     Returns predictions over the time interval from starting_point to terminal_time (obtained by backfeeding) from the starting-point.
     :param starting_window: The starting-window (where to start predicting from)
