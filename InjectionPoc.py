@@ -14,7 +14,7 @@ def get_predictions(starting_window, time_step, nn, terminal_time, injection_fun
     :param starting_window: The starting-window (where to start predicting from)
     :param time_step: The time-step between two predictions
     :param nn: The nn to use for predicting
-    :param terminal_time: Stop prediction when this time is reached
+    :param terminal_time: Number of steps to predict
     :param injection_func: The function to use to calculate the injection (based on the whole window for a step)
     :return: A list of predictions
     """
@@ -22,7 +22,7 @@ def get_predictions(starting_window, time_step, nn, terminal_time, injection_fun
     last_window = starting_window
     last_step = last_window[-1]
     
-    while round(last_step[-1], 2) < round(terminal_time, 2):
+    for i in range(N):
         if injection_func:
             prediction = nn.predict(x=[np.array([last_window]), np.array([injection_func(np.array([last_window]))])[0]])[0]
         else:

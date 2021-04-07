@@ -36,21 +36,21 @@ def plot_prediction_accuracy(test_data, predictions, num_vars, title, labels=Non
     plt.show()
 
 
-def plot_derivatives(x_axis, derivatives, predictions, title=None, labels=None):
+def plot_derivatives(taxis, actual, predictions, title=None, labels=None):
     """
     Plots the actual derivatives vs. the given predictions.
     :param x_axis: The values for the x-axis
-    :param derivatives: Nested list with derivatives for each variable
-    :param predictions: Nested list with derivative predictions for each variable
+    :param actual: Array with the actual (approximated) derivatives for each variable
+    :param predictions: Array with derivative predictions for each variable
     :param title: The title of the plot
     :param labels: The labels for each of the derivatives
     """
     if not labels:
-        labels = [i for i in range(len(derivatives))]
+        labels = [i for i in range(len(actual[1]))]
     plt.figure()
-    for i in range(len(derivatives)):
-        plt.plot(x_axis, derivatives[i], label="Actual values {}".format(labels[i]))
-        plt.plot(x_axis, predictions[i], label="Predictions {}".format(labels[i]))
+    for i in range(len(actual[1])):
+        plt.plot(taxis, actual[:,i], label="Actual values {}".format(labels[i]))
+        plt.plot(taxis, predictions[:,i], label="Predictions {}".format(labels[i]))
     if title:
         plt.title(title)
     plt.xlabel("Derivatives")
@@ -88,6 +88,6 @@ def plot_prediction_summary(actual, predictions, labels=None, header=None):
     if not labels:
         labels = [i for i in range(len(predictions[0]))]
     for i in range(len(predictions[0])):
-        accuracy = mean_squared_error(actual[:,-1,i], predictions[::PREDICTION_TIME_STEP_MULTIPLIER,[i]])
+        accuracy = mean_squared_error(actual[::SPARSE,-1,i], predictions[::PREDICTION_TIME_STEP_MULTIPLIER,[i]])
         print("{}-Accuracy: {}".format(labels[i], accuracy))
 

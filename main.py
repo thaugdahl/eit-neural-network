@@ -23,49 +23,49 @@ if __name__ == '__main__':
     injection_func = xy
 
     # Generate some training- and test-data
-    in_data, target_data = get_data(DATA_FILE, N, SPARSE, SLIDING_WINDOW_LENGTH)
-    in_train, in_test, target_train, target_test = split_data(in_data, target_data, PREDICTION_SPLIT)
+    in_train, target_train, in_test, target_test = get_data(DATA_FILE, N, SPARSE, SLIDING_WINDOW_LENGTH)
+
 
     # Generate the neural network for injection
     nn_inj = gen_nn(NN_HIDDEN_LAYERS, INJECTION_LAYERS, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
-
+    """
     # Create callback for tensorboard
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    """
+
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir=log_dir, histogram_freq=1)
     """
-    
+
     # Create the injection data
     injection_data = injection_func(in_train)
-
+    
     # Train the NN
     nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
     history = nn_inj.fit(x=[in_train, injection_data], y=[target_train], epochs=EPOCHS, validation_split=VALIDATION_SPLIT)
     plot_training_summary(history, title="Training plot with PGML")
-
-    starting_window = in_train[-1]
-    training_time_step = abs(in_test[0][0][-1] - in_test[0][1][-1])
-    prediction_time_step = training_time_step/PREDICTION_TIME_STEP_MULTIPLIER
-
+    
+    starting_window = in_test[1]
+    testing_time_step = abs(in_test[1][-1][-1] - in_test[0][-1][-1])
+    prediction_time_step = testing_time_step/PREDICTION_TIME_STEP_MULTIPLIER
+    prediction_steps = min((PREDICTION_MAX_STEPS, len(in_test)))
+    testing_t_axis = in_test[:prediction_steps,-1,-1]
+    
     # Retrieve derivative predictions
-    target_predictions = get_target_predictions(in_test, nn_inj, injection_func)
+    target_predictions = get_target_predictions(in_test[:prediction_steps], nn_inj, injection_func)[:,0,:]
     # Plot derivatives for each variable
-    train_t_axis = np.arange(0, in_test[-1][-1][-1] - in_test[0][-1][-1] + training_time_step, training_time_step)
-    value_predictions = split_predictions(target_predictions, DATA_NUM_VARIABLES - 1)
-    actual_values = split_values(target_test, DATA_NUM_VARIABLES - 1)
-    plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives with PGML", labels=WINDOW_LABELS)
+
+    plot_derivatives(testing_t_axis,target_test[:prediction_steps], target_predictions, title="Derivatives with PGML", labels=WINDOW_LABELS)
 
     # Then need to predict for the future. Try to see if they match validation data
-    predictions = get_predictions(starting_window, prediction_time_step, nn_inj, in_test[-1][-1][-1], injection_func)
+    predictions = get_predictions(starting_window, prediction_time_step, nn_inj, prediction_steps, injection_func)
     
 
     # Plot prediction accuracy
     title = "PGML Trained on {} datapoints, window-length {}, time-step {}".format(len(in_train), SLIDING_WINDOW_LENGTH, prediction_time_step)
-    plot_prediction_accuracy(in_test, predictions, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
+    plot_prediction_accuracy(in_test[:prediction_steps,:,:], predictions, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
 
     # Plot the mse between all actual values and all predicted values for the future
-    plot_prediction_summary(in_test, predictions, WINDOW_LABELS, "Prediction Summary with PGML")
+    plot_prediction_summary(in_test[:prediction_steps,:,:], predictions, WINDOW_LABELS, "Prediction Summary with PGML")
 
     # Now repeat the process on a regular neural network without injection to compare
     nn_reg = gen_nn(NN_HIDDEN_LAYERS, {}, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
@@ -75,23 +75,21 @@ if __name__ == '__main__':
     plot_training_summary(history, title="Training plot without PGML")
 
     # Get derivatives and plot for the network
-    target_predictions = get_target_predictions(in_test, nn_reg, inj_func=None)
+    target_predictions = get_target_predictions(in_test[:prediction_steps,:,:], nn_reg, inj_func=None)[:,0,:]
     # Plot derivatives for each variable
-    value_predictions = split_predictions(target_predictions, DATA_NUM_VARIABLES - 1)  # Update predictions
-    plot_derivatives(train_t_axis, actual_values, value_predictions, title="Derivatives without PGML", labels=WINDOW_LABELS)
+
+    plot_derivatives(testing_t_axis,target_test[:prediction_steps], target_predictions, title="Derivatives without PGML", labels=WINDOW_LABELS)
 
     # Then predict for future...
-    predictions = get_predictions(starting_window, prediction_time_step, nn_reg, in_test[-1][-1][-1])
+    predictions = get_predictions(starting_window, prediction_time_step, nn_reg, prediction_steps)
 
     # Plot prediction accuracy
     title = "Trained on {} datapoints, window-length {}, time-step {}".format(
         len(in_train), SLIDING_WINDOW_LENGTH, prediction_time_step)
-    plot_prediction_accuracy(in_test, predictions, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
+    plot_prediction_accuracy(in_test[:prediction_steps], predictions, DATA_NUM_VARIABLES - 1, title, WINDOW_LABELS)
 
     # Plot the mse between all actual values and all predicted values for the future
-    plot_prediction_summary(in_test, predictions, WINDOW_LABELS, "Prediction Summary without PGML")
-
-
+    plot_prediction_summary(in_test[:prediction_steps], predictions, WINDOW_LABELS, "Prediction Summary without PGML")
 
 
 

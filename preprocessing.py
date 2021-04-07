@@ -1,6 +1,7 @@
 import numpy as np
 from solver import tsv2arr
 from math import floor
+from settings import *
 
 
 def create_sliding_window(data: np.ndarray, window_size: int):
@@ -62,14 +63,22 @@ def get_data(file, n, sparse, window_size):
     """
     # Generate some training- and test-data
     raw_data = tsv2arr(file)
-    raw_data = np.array([i for i in raw_data if i[-1] == 0])
-    # Remove training batch info and limit training size
-    raw_data = raw_data[:n * sparse, :-1]
-
-    x_data, y_data = create_training_data(
-        raw_data, window_size, sparse)
-
-    return x_data, y_data
+    in_train=[]
+    target_train = []
+    for i in range(0,int(raw_data[-1,-1])):   
+        run = np.array(list(filter(lambda x:x[-1]==i,raw_data)))
+        run = create_training_data(run[:,:-1], window_size,sparse)
+        in_train.append(run[0])
+        target_train.append(run[1])
+    in_train = np.array(in_train)    
+    in_train = np.reshape(in_train,(-1,window_size,DATA_NUM_VARIABLES))    
+    
+    target_train = np.array(target_train)
+    target_train = np.reshape(target_train,(-1,DATA_NUM_VARIABLES-1))
+        
+    last_run = np.array(list(filter(lambda x:x[-1]==raw_data[-1,-1], raw_data)))
+    in_test,target_test = create_training_data(last_run[:,:-1],window_size,sparse)
+    return in_train, target_train, in_test, target_test
 
 
 def split_data(x_data, y_data, split):
