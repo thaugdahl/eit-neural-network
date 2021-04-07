@@ -16,7 +16,7 @@ def pertlotka_volterra(tn,xn):
     
     x = alpha*xn[0]*(1+0.5*np.sin(tn*2*np.pi / 100)) - beta*xn[0]*xn[1]
     
-    y = delta*xn[0]*xn[1]-gamma*xn[1] + 0.01*(1+np.sin(tn*2*np.pi/100))
+    y = delta*xn[0]*xn[1]-gamma*xn[1] + 0.02*(1+np.sin(tn*2*np.pi/100))
     
     
     return np.array([x,y])

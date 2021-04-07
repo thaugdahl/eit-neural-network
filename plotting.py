@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from math import isnan
 from sklearn.metrics import mean_squared_error
 from settings import *
+
 
 
 def plot_prediction_accuracy(test_data, predictions, num_vars, title, labels=None):
@@ -19,6 +21,9 @@ def plot_prediction_accuracy(test_data, predictions, num_vars, title, labels=Non
     actual_values = test_data[:,-1,:]
     actual_t_axis = actual_values[:,-1] - actual_values[0,-1]
     prediction_t_axis= predictions[:,-1] - predictions[0,-1]
+    ymax = max(actual_values.flatten())*1.5
+    ymin = min(actual_values.flatten())*1.5
+    plt.ylim(ymin,ymax)
     
 
     if not labels:
@@ -83,11 +88,14 @@ def plot_prediction_summary(actual, predictions, labels=None, header=None):
     :param labels: The labels to use for each variable when printing
     :param header: The header to use for printing
     """
-    if header:
-        print(header)
-    if not labels:
-        labels = [i for i in range(len(predictions[0]))]
-    for i in range(len(predictions[0])):
-        accuracy = mean_squared_error(actual[::SPARSE,-1,i], predictions[::PREDICTION_TIME_STEP_MULTIPLIER,[i]])
-        print("{}-Accuracy: {}".format(labels[i], accuracy))
+    if np.isnan(predictions).any():
+        print("Exploded to infinity :(")
+    else:
+        if header:
+            print(header)
+        if not labels:
+            labels = [i for i in range(len(predictions[0]))]
+            for i in range(len(predictions[0])):
+                accuracy = mean_squared_error(actual[::SPARSE,-1,i], predictions[::PREDICTION_TIME_STEP_MULTIPLIER,[i]])
+                print("{}-Accuracy: {}".format(labels[i], accuracy))
 
