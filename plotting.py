@@ -95,7 +95,7 @@ def plot_prediction_summary(actual, predictions, labels=None, header=None):
             print(header)
         if not labels:
             labels = [i for i in range(len(predictions[0]))]
-            for i in range(len(predictions[0])):
-                accuracy = mean_squared_error(actual[::SPARSE,-1,i], predictions[::PREDICTION_TIME_STEP_MULTIPLIER,[i]])
-                print("{}-Accuracy: {}".format(labels[i], accuracy))
+        for i in range(len(predictions[0])):
+            accuracy = mean_squared_error(actual[::SPARSE,-1,i], predictions[::PREDICTION_TIME_STEP_MULTIPLIER,[i]])
+            print("{}-Accuracy: {}".format(labels[i], accuracy))
 
