@@ -1,3 +1,5 @@
+import numpy as np
+
 def xy(vect):
     return vect[:,:,0]*vect[:,:,1]
 
@@ -10,4 +12,10 @@ def inject_constant(row):
     """
     return 1
 
-    
+def cos_t(freq):
+    def func(vect):
+        return np.cos(freq*vect[:,:,-1])
+    return func
+
+def x_cubed(vect):
+    return vect[:,:,0]**3

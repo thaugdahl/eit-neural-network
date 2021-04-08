@@ -15,8 +15,8 @@ LOSS = "mse"
 OPTIMIZER = "adam"
 VALIDATION_SPLIT = 0.2
 NN_HIDDEN_LAYERS = (16,32,16)
-INJECTION_LAYERS = {3: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": xy},
-                    2: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": xy}}
+INJECTION_LAYERS = {3: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": cos_t(0.4)},
+                    1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": x_cubed}}
 ACTIVATION = 'relu'
 EPOCHS = 5
 
@@ -25,7 +25,7 @@ EPOCHS = 5
 """
 Training data
 """
-DATA_FILE = 'PertLV.tsv'
+DATA_FILE = 'Duffing.tsv'
 N = 400000  # (Maximum) Training data size
 SPARSE = 1 # Number of timesteps to skip when creating training data
 
@@ -34,7 +34,7 @@ SPARSE = 1 # Number of timesteps to skip when creating training data
 Prediction
 """
 PREDICTION_TIME_STEP_MULTIPLIER = 1
-PREDICTION_MAX_STEPS = 10
+PREDICTION_MAX_STEPS = 100
 
 
 """
