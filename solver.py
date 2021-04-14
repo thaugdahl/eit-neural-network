@@ -34,14 +34,15 @@ def rk4step(tn,xn,f,h):
 
 
 def plotSolution(dataset, firstRow, lastRow, style="standard"):
-    x = dataset[firstRow:lastRow, 0:2]
+    x = dataset[firstRow:lastRow]
     if style.lower() == "phaseportrait" or style == "pp":
         plt.plot(x[:, 0], x[:, 1])
         plt.xlabel("x")
         plt.ylabel("y")
     else:
-        plt.plot(x[:, 0])
-        plt.plot(x[:, 1])
+        for i in range(dataset.shape[1]):
+            plt.plot(x[:, i])
+        
         plt.xlabel("t")
         plt.ylabel("Solution")
     plt.show()
@@ -95,16 +96,16 @@ def generateTrainingData(saveResults=False):
     #LVparams_dims = np.shape(LVparams)
 
     # Set other parameters
-    f = eq.pertlotka_volterra
+    f = eq.lorentz
     t = 0.0
     T = 200
     h = 0.05
 
-    x0 = np.array([[15+5*i,2] for i in range(1,5)] + [[25,2]])  
+    x0 = np.array([[1+i,2,4]for i in range(1,5)] + [[3,2,4]])  
     nRuns,d = x0.shape
-    dataset = np.zeros((0,4),dtype=float)
+    dataset = np.zeros((0,d+2),dtype=float)
     for run in range(int(nRuns)):
-        x = rk4(f,t,T,h,x0[run],2)
+        x = rk4(f,t,T,h,x0[run],d)
         runcol = np.full((x.shape[0],1), run)
         x = np.hstack((x,runcol))
         dataset = np.vstack((dataset,x))
@@ -124,8 +125,8 @@ def tsv2arr(filename):
 if __name__ == '__main__':
     dataset = generateTrainingData(saveResults=True)
     firstRow = 0
-    lastRow = 10000000
-    plotSolution(dataset,firstRow,lastRow,'pp')
+    lastRow = 200
+    plotSolution(dataset,firstRow,lastRow)
 """
 # Generate dataset and set saveResults to true or false
 dataset = generateTrainingData(saveResults=True)

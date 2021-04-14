@@ -1,6 +1,11 @@
 # Training data
 *.tsv
 
+
+#Plots
+*.pdf
+*.png
+
 # Tensorflow
 /logs/*
 logs/

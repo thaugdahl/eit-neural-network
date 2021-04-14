@@ -46,6 +46,12 @@ def duffing(t,x):
     
     return np.array([f0, f1])
 
+def lorentz(t,x):
+    a = 10*(x[1]-x[0])
+    b = x[0]*(28-x[2]) - x[1]
+    c = x[0]*x[1] - 4*x[2]
+    
+    return np.array([a,b,c])
 
 
 

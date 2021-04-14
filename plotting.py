@@ -3,6 +3,7 @@ import numpy as np
 from math import isnan
 from sklearn.metrics import mean_squared_error
 from settings import *
+import scipy.stats as stats
 
 
 
@@ -21,8 +22,8 @@ def plot_prediction_accuracy(test_data, predictions, num_vars, title, labels=Non
     actual_values = test_data[:,-1,:]
     actual_t_axis = actual_values[:,-1] - actual_values[0,-1]
     prediction_t_axis= predictions[:,-1] - predictions[0,-1]
-    ymax = max(actual_values.flatten())*1.1
-    ymin = min(actual_values.flatten())*1.1
+    ymax = max(actual_values[:,:-1].flatten())*1.1
+    ymin = min(actual_values[:,:-1].flatten())*1.1
     plt.ylim(ymin,ymax)
     
 
@@ -100,20 +101,53 @@ def plot_prediction_summary(actual, predictions, labels=None, header=None):
             print("{}-Accuracy: {}".format(labels[i], accuracy))
 
 
-def plot_confidence_intervals(runs, true, step, num_variables, percentage, titles=None):
-    taxis = runs[0,::step,-1]
+def plot_confidence_intervals(inj_runs, reg_runs, true, step, num_variables, percentage, titles=None):
+    taxis = inj_runs[0,::step,-1]
     
     for i in range(num_variables):
         fig,ax = plt.subplots()
-        mus = np.mean(runs[:,::step,i],0)
-        stdevs = np.std(runs[:,::step,i],0, ddof=1)
-        below, above = stats.t.interval(percentage/100, runs.shape[0] -1, mus, stdevs)
-        ax.plot(taxis, mus, label = "Average")
-        ax.fill_between(taxis,below,above, alpha=0.2)
+        inj_mus = np.mean(inj_runs[:,::step,i],0)
+        inj_stdevs = np.std(inj_runs[:,::step,i],0, ddof=1)
+        inj_below, inj_above = stats.t.interval(percentage/100, inj_runs.shape[0] -1, inj_mus, inj_stdevs)
+        ax.plot(taxis, inj_mus, label = "Average")
+        ax.fill_between(taxis,inj_below,inj_above, alpha=0.2)
         ax.plot(true[:,-1],true[:,i], label= "True")
         ax.legend()
+        plt.savefig("PGML"+str(i)+".pdf")
         
         if titles:
-            ax.set_title(str(percentage)+"% Confidence interval for "+titles[i])
-    
+            ax.set_title(str(percentage)+"% Confidence interval for "+titles[i]+" with PGML")
+        
         plt.show()
+        
+        fig,ax = plt.subplots()
+        reg_mus = np.mean(reg_runs[:,::step,i],0)
+        reg_stdevs = np.std(reg_runs[:,::step,i],0, ddof=1)
+        reg_below, reg_above = stats.t.interval(percentage/100, reg_runs.shape[0] -1, reg_mus, reg_stdevs)
+        ax.plot(taxis, reg_mus, label = "Average")
+        ax.fill_between(taxis,reg_below,reg_above, alpha=0.2)
+        ax.plot(true[:,-1],true[:,i], label= "True")
+        ax.legend()
+        plt.savefig("ML"+str(i)+".pdf")
+        
+        if titles:
+            ax.set_title(str(percentage)+"% Confidence interval for "+titles[i]+" without PGML")
+        
+        plt.show()
+        
+        fig,ax = plt.subplots()
+        ax.plot(taxis, inj_above-inj_below, label = "PGML")
+        ax.plot(taxis, reg_above-reg_below, label = "ML")
+        ax.legend()
+        plt.savefig("Difference"+str(i)+".pdf")
+        
+        if titles:
+            ax.set_title("Width of confidence intevals for " +titles[i])
+        
+        plt.savefig("Diff"+str(i)+".pdf")
+        plt.show()
+        
+        
+        
+        
+       

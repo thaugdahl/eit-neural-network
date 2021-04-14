@@ -5,8 +5,7 @@ from InjectionFunctions import *
 Structure of data
 """
 DATA_NUM_VARIABLES = 3
-SLIDING_WINDOW_LENGTH = 2
-
+SLIDING_WINDOW_LENGTH = 5
 
 """
 Neaural Network
@@ -34,7 +33,7 @@ SPARSE = 1 # Number of timesteps to skip when creating training data
 Prediction
 """
 PREDICTION_TIME_STEP_MULTIPLIER = 1
-PREDICTION_MAX_STEPS = 100
+PREDICTION_MAX_STEPS = 500
 
 
 """
@@ -47,6 +46,6 @@ Statistics
 """
 CONFIDENCE_PERCENTAGE = 95
 CONFIDENCE_STEP = 1
-CONFIDENCE_N = 3
+CONFIDENCE_N = 10
 
 

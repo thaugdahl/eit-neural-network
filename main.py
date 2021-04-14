@@ -18,8 +18,6 @@ if __name__ == '__main__':
     # Labels
     labels = WINDOW_LABELS
 
-    # Set function to be used for injection
-    injection_func = xy
 
     # Generate some training- and test-data
     in_train, target_train, in_test, target_test = get_data(DATA_FILE, N, SPARSE, SLIDING_WINDOW_LENGTH)
