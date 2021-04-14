@@ -26,41 +26,40 @@ if __name__ == '__main__':
     
     injection_data = create_injection_data(INJECTION_LAYERS, in_train)
     
-    inj_runs=[]
-    reg_runs=[]
-    for i in range(CONFIDENCE_N):
-        print("\n"*10)
-        print("Run "+str(i+1)+" of " +str(CONFIDENCE_N)+":")
-        print("\n")
-        # Generate the neural network for injection
-        nn_inj = gen_nn(NN_HIDDEN_LAYERS, INJECTION_LAYERS, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
-        nn_reg  = gen_nn(NN_HIDDEN_LAYERS, {}, SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
+    runs = []
+    for inj in INJECTION_LIST:
+        print("\n"+inj[0]+"\n")
+        inj_runs = []
+        for i in range(CONFIDENCE_N):
         
-        # Train the NN
-        nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
-        nn_inj.fit(x=get_in_data_for_nn(in_train, injection_data), y=[target_train], epochs=EPOCHS, validation_split=VALIDATION_SPLIT)
+            print("\n")
+            print("Run "+str(i+1)+" of " +str(CONFIDENCE_N)+":")
+            print("\n")
+            # Generate the neural network for injection
+            nn_inj = gen_nn(NN_HIDDEN_LAYERS, inj[1], SLIDING_WINDOW_LENGTH, DATA_NUM_VARIABLES, ACTIVATION)
+           
+            # Train the NN
+            nn_inj.compile(optimizer=OPTIMIZER, loss=LOSS)
+            nn_inj.fit(x=get_in_data_for_nn(in_train, injection_data), y=[target_train], epochs=EPOCHS, validation_split=VALIDATION_SPLIT)
+            
+            starting_window = in_test[1]
+            testing_time_step = abs(in_test[1][-1][-1] - in_test[0][-1][-1])
+            prediction_time_step = testing_time_step/PREDICTION_TIME_STEP_MULTIPLIER
+            prediction_steps = min((PREDICTION_MAX_STEPS, len(in_test)))
+            testing_t_axis = in_test[:prediction_steps,-1,-1]
+            
+           
+            
+            
+            inj_predictions = get_predictions(starting_window, prediction_time_step, nn_inj, prediction_steps, INJECTION_LAYERS)
+            
+            inj_runs.append(inj_predictions)
+            print("\n"*10)
+        runs.append(inj_runs)
         
-        nn_reg.compile(optimizer=OPTIMIZER, loss=LOSS)
-        nn_reg.fit(x=[in_train], y=[target_train], epochs=EPOCHS, validation_split=VALIDATION_SPLIT)
-        
-        starting_window = in_test[1]
-        testing_time_step = abs(in_test[1][-1][-1] - in_test[0][-1][-1])
-        prediction_time_step = testing_time_step/PREDICTION_TIME_STEP_MULTIPLIER
-        prediction_steps = min((PREDICTION_MAX_STEPS, len(in_test)))
-        testing_t_axis = in_test[:prediction_steps,-1,-1]
-        
-       
-        
-        
-        inj_predictions = get_predictions(starting_window, prediction_time_step, nn_inj, prediction_steps, INJECTION_LAYERS)
-        reg_predictions = get_predictions(starting_window, prediction_time_step, nn_reg, prediction_steps)
-        inj_runs.append(inj_predictions)
-        reg_runs.append(reg_predictions)
+    runs=np.array(runs)
     
-    inj_runs=np.array(inj_runs)
-    reg_runs=np.array(reg_runs)
-    
-    plot_confidence_intervals(inj_runs,reg_runs,in_test[SLIDING_WINDOW_LENGTH:prediction_steps+SLIDING_WINDOW_LENGTH,-1,:],CONFIDENCE_STEP,DATA_NUM_VARIABLES-1,CONFIDENCE_PERCENTAGE,labels)
+    plot_confidence_intervals(runs,in_test[SLIDING_WINDOW_LENGTH:prediction_steps+SLIDING_WINDOW_LENGTH,-1,:],CONFIDENCE_STEP,DATA_NUM_VARIABLES-1,CONFIDENCE_PERCENTAGE,labels,INJECTION_LIST)
 
 
 

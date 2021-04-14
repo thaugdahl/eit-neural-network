@@ -40,12 +40,17 @@ def plotSolution(dataset, firstRow, lastRow, style="standard"):
         plt.xlabel("x")
         plt.ylabel("y")
     else:
-        for i in range(dataset.shape[1]):
-            plt.plot(x[:, i])
+        """
+        for i in range(dataset.shape[1]-2):
+            plt.plot(x[:,-1],x[:, i])
+        """
+        plt.plot(x[:,-2],x[:, 0])
         
         plt.xlabel("t")
         plt.ylabel("Solution")
+        plt.savefig("Duffing.pdf")
     plt.show()
+    
     
 def rk4(f,t0,T,h,x0,d):
     """
@@ -96,12 +101,12 @@ def generateTrainingData(saveResults=False):
     #LVparams_dims = np.shape(LVparams)
 
     # Set other parameters
-    f = eq.lorentz
+    f = eq.duffing
     t = 0.0
     T = 200
     h = 0.05
 
-    x0 = np.array([[1+i,2,4]for i in range(1,5)] + [[3,2,4]])  
+    x0 = np.array([[1,1],[0,1],[-1,1],[1,-1],[0,-1],[-1,-1],[1,0.5]])  
     nRuns,d = x0.shape
     dataset = np.zeros((0,d+2),dtype=float)
     for run in range(int(nRuns)):
@@ -125,8 +130,8 @@ def tsv2arr(filename):
 if __name__ == '__main__':
     dataset = generateTrainingData(saveResults=True)
     firstRow = 0
-    lastRow = 200
-    plotSolution(dataset,firstRow,lastRow)
+    lastRow = 1000000
+    plotSolution(dataset,firstRow,lastRow,'pp')
 """
 # Generate dataset and set saveResults to true or false
 dataset = generateTrainingData(saveResults=True)

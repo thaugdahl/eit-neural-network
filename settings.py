@@ -5,7 +5,7 @@ from InjectionFunctions import *
 Structure of data
 """
 DATA_NUM_VARIABLES = 3
-SLIDING_WINDOW_LENGTH = 5
+SLIDING_WINDOW_LENGTH = 3
 
 """
 Neaural Network
@@ -17,7 +17,7 @@ NN_HIDDEN_LAYERS = (16,32,16)
 INJECTION_LAYERS = {3: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": cos_t(0.4)},
                     1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": x_cubed}}
 ACTIVATION = 'relu'
-EPOCHS = 5
+EPOCHS = 1
 
 
 
@@ -46,6 +46,20 @@ Statistics
 """
 CONFIDENCE_PERCENTAGE = 95
 CONFIDENCE_STEP = 1
-CONFIDENCE_N = 10
+CONFIDENCE_N = 2
+
+INJECTION_LIST = [
+        ["Both injections",  
+             {3: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": cos_t(0.4)},
+              1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": x_cubed}}
+        ],
+        
+        ["X^3 injection", 
+             {1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": x_cubed}}
+        ],
+        ["Cosine injection", 
+             {3: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": cos_t(0.4)}}
+        ],
+        ["No injection",{}]]
 
 
