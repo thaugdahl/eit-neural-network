@@ -2,11 +2,10 @@ import tensorflow as tf
 import datetime
 from settings import *
 import numpy as np
-from settings import NN_HIDDEN_LAYERS, LOSS, OPTIMIZER, INJECTION_LAYERS
 import math
 from typing import Union
 from tqdm import tqdm
-from utils import get_in_data_for_nn, create_injection_data
+from utils import get_in_data_for_nn, create_injection_data, get_optimizer
 
 
 
@@ -91,7 +90,7 @@ def gen_nn(hidden_layers: tuple, injection_nodes: dict, window: int, series_leng
 
 if __name__ == '__main__':
     nn = gen_nn(NN_HIDDEN_LAYERS, INJECTION_LAYERS, 2, 3)
-    nn.compile(optimizer=OPTIMIZER, loss=LOSS, metrics=None)
+    nn.compile(optimizer= get_optimizer(OPTIMIZER, LEARNING_RATE), loss=LOSS, metrics=None)
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir=log_dir, histogram_freq=1)

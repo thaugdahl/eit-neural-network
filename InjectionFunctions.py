@@ -4,7 +4,7 @@ def xy(vect):
     return vect[:,:,0]*vect[:,:,1]
 
 def xz(vect):
-    return vect[:,-2:,0]*vect[:,-2:,2]
+    return vect[:,:,0]*vect[:,:,2]
 
 def inject_constant(row):
     """

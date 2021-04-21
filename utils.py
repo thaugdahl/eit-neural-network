@@ -1,5 +1,5 @@
 import numpy as np
-
+import tensorflow as tf
 
 def get_injection_data(arr, inj_func):
     """
@@ -86,3 +86,23 @@ def get_in_data_for_nn(first_data, injection_data):
     for d in injection_data:
         in_data.append(np.array(d))
     return in_data
+
+
+def get_optimizer(opt_type, lr):
+        """
+        Returns an optimizer. The optimizer is specified by the name (i.e. 'adam', 'sgd') and learning-rate specified.
+        :param opt_type: The name of optimizer type
+        :param lr: The learning rate of the optimizer
+        :return: The optimizer
+        """
+        if opt_type == 'adam':
+            return tf.keras.optimizers.Adam(lr=lr)
+        elif opt_type == 'adagrad':
+            return tf.keras.optimizers.Adagrad(lr=lr)
+        elif opt_type == 'sgd':
+            return tf.keras.optimizers.SGD(lr=lr)
+        elif opt_type == 'rms':
+            return tf.keras.optimizers.RMSprop(lr=lr)
+        else:
+            raise ValueError('Invalid optimizer type: {}'.format(opt_type))
+

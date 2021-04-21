@@ -5,26 +5,31 @@ from InjectionFunctions import *
 Structure of data
 """
 DATA_NUM_VARIABLES = 3
-SLIDING_WINDOW_LENGTH = 3
+SLIDING_WINDOW_LENGTH = 7
 
 """
 Neaural Network
 """
 LOSS = "mse"
 OPTIMIZER = "adam"
+LEARNING_RATE = 0.00005
 VALIDATION_SPLIT = 0.2
-NN_HIDDEN_LAYERS = (16,32,16)
-INJECTION_LAYERS = {3: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": cos_t(0.4)},
-                    1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": x_cubed}}
+NN_HIDDEN_LAYERS = (32,64,32)
+INJECTION_LAYERS = {}
+"""
+{1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": xy},
+                    1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": xz}}
+"""
+
 ACTIVATION = 'relu'
-EPOCHS = 1
+EPOCHS = 10
 
 
 
 """
 Training data
 """
-DATA_FILE = 'Duffing.tsv'
+DATA_FILE = 'LargeDuffing.tsv'
 N = 400000  # (Maximum) Training data size
 SPARSE = 1 # Number of timesteps to skip when creating training data
 
@@ -46,20 +51,11 @@ Statistics
 """
 CONFIDENCE_PERCENTAGE = 95
 CONFIDENCE_STEP = 1
-CONFIDENCE_N = 2
+CONFIDENCE_N = 1
 
 INJECTION_LIST = [
-        ["Both injections",  
-             {3: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": cos_t(0.4)},
-              1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": x_cubed}}
-        ],
-        
-        ["X^3 injection", 
-             {1: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": x_cubed}}
-        ],
-        ["Cosine injection", 
-             {3: {"shape": (SLIDING_WINDOW_LENGTH, ), "function": cos_t(0.4)}}
-        ],
-        ["No injection",{}]]
+        ["Large",{},(64,128,128,128,64),7],
+        ["Medium",{},(32,64,64,32),7],
+        ["Small",{},(16,32,16),7]]
 
 

@@ -111,11 +111,15 @@ def plot_confidence_intervals(runs, true, step, num_variables, percentage, title
             inj_mus = np.mean(inj_runs[:,::step,i],0)
             inj_stdevs = np.std(inj_runs[:,::step,i],0, ddof=1)
             inj_below, inj_above = stats.t.interval(percentage/100, inj_runs.shape[0] -1, inj_mus, inj_stdevs)
-            ax.plot(taxis, inj_mus, label = "Gjennomsnit")
+            ax.plot(taxis, inj_mus, label = "Gjennomsnitt")
             ax.fill_between(taxis,inj_below,inj_above, alpha=0.2)
             ax.plot(true[:,-1],true[:,i], label= "Sanne verdier")
             ax.plot(taxis,inj_runs[0,:,i], label = "Prediksjon")
             ax.set_xlabel("t")
+            ax.set_ylabel("x(t)")
+            ymax=max(true[:,:-1].flatten())*2
+            ymin=min(true[:,:-1].flatten())*2
+            ax.set_ylim((ymin,ymax))
             ax.legend()
             plt.savefig(injections[j][0]+titles[i]+".pdf")
             plt.show()

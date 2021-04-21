@@ -14,10 +14,9 @@ def pertlotka_volterra(tn,xn):
     gamma = 1.1 # Death rate of predators 
     delta = 0.1 # Growth rate of predators
     
-    x = alpha*xn[0]*(1+0.5*np.sin(tn*2*np.pi / 100)) - beta*xn[0]*xn[1]
+    x = alpha*xn[0] - beta*xn[0]*xn[1]
     
-    y = delta*xn[0]*xn[1]-gamma*xn[1] + 0.02*(1+np.sin(tn*2*np.pi/100))
-    
+    y = delta*xn[0]*xn[1]  - gamma*xn[1]
     
     return np.array([x,y])
 
@@ -49,7 +48,7 @@ def duffing(t,x):
 def lorentz(t,x):
     a = 10*(x[1]-x[0])
     b = x[0]*(28-x[2]) - x[1]
-    c = x[0]*x[1] - 4*x[2]
+    c = x[0]*x[1] - (8/3)*x[2]
     
     return np.array([a,b,c])
 

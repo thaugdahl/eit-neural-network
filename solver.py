@@ -40,15 +40,9 @@ def plotSolution(dataset, firstRow, lastRow, style="standard"):
         plt.xlabel("x")
         plt.ylabel("y")
     else:
-        """
         for i in range(dataset.shape[1]-2):
-            plt.plot(x[:,-1],x[:, i])
-        """
-        plt.plot(x[:,-2],x[:, 0])
+            plt.plot(x[:,-2],x[:, i])
         
-        plt.xlabel("t")
-        plt.ylabel("Solution")
-        plt.savefig("Duffing.pdf")
     plt.show()
     
     
@@ -103,10 +97,10 @@ def generateTrainingData(saveResults=False):
     # Set other parameters
     f = eq.duffing
     t = 0.0
-    T = 200
+    T = 100
     h = 0.05
 
-    x0 = np.array([[1,1],[0,1],[-1,1],[1,-1],[0,-1],[-1,-1],[1,0.5]])  
+    x0 = np.array([[1,1],[0.5,1],[0,1],[-0.5,1],[-1,1],[-1,0.5],[-1,0],[-1,-0.5],[-1,-1]])  
     nRuns,d = x0.shape
     dataset = np.zeros((0,d+2),dtype=float)
     for run in range(int(nRuns)):
@@ -131,7 +125,7 @@ if __name__ == '__main__':
     dataset = generateTrainingData(saveResults=True)
     firstRow = 0
     lastRow = 1000000
-    plotSolution(dataset,firstRow,lastRow,'pp')
+    plotSolution(dataset,firstRow,lastRow)
 """
 # Generate dataset and set saveResults to true or false
 dataset = generateTrainingData(saveResults=True)
